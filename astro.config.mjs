@@ -33,7 +33,7 @@ import icon from "astro-icon";
  * Falls back to 'production' if NODE_ENV is not set.
  */
 
-const SITE_URL = "https://tousif.in"
+const SITE_URL = "https://tousif.in/"
 
 
 /**

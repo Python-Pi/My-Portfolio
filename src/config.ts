@@ -10,7 +10,7 @@ export const siteConfig = {
    * Site URL (required for sitemap, canonical URLs, OG tags)
    * Example: 'https://example.com'
    */
-  url: 'https://www.tousif.in',
+  url: 'https://www.tousif.in/',
   
   /**
    * Site language 
