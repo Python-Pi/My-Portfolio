@@ -38,9 +38,22 @@ interface Props {
   
   /** Optional array of tags/categories for the article */
   tags?: string[];
+
+  /** Optional base path for article links (defaults to /writing) */
+  basePath?: string;
 }
 
-const { title, slug, description, publishDate, tags = [] } = Astro.props;
+const {
+  title,
+  slug,
+  description,
+  publishDate,
+  tags = [],
+  basePath = '/writing',
+} = Astro.props;
+
+const normalizedBasePath = basePath.endsWith('/') ? basePath.slice(0, -1) : basePath;
+const articleHref = `${normalizedBasePath}/${slug}`;
 
 /**
  * Formats a date object into a human-readable string
@@ -60,7 +73,7 @@ function formatDate(date: Date): string {
 }
 ---
 
-<BaseCard href={`/writing/${slug}`} class="article-card">
+<BaseCard href={articleHref} class="article-card">
   <Fragment slot="meta">{formatDate(publishDate)}</Fragment>
   <Fragment slot="title">{title}</Fragment>
   <Fragment slot="description">{description}</Fragment>

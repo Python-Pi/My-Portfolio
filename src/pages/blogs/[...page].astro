@@ -1,0 +1,104 @@
+---
+/**
+ * Blogs Index Page with Pagination
+ *
+ * Mirrors the writing listing while exposing the content under /blogs.
+ * Uses the writing collection as the canonical source for blog posts.
+ */
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SEO from '../../components/SEO.astro';
+import Pagination from '../../components/Pagination.astro';
+import ArticleCard from '../../components/ArticleCard.astro';
+import PageStats from '../../components/PageStats.astro';
+import { getCollection } from 'astro:content';
+import { pagesConfig } from '../../pages.config';
+import type { GetStaticPaths } from 'astro';
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const postsPerPage = 5;
+
+  const allArticles = await getCollection('blogs', ({ data }) => data.draft === false);
+
+  const sortedArticles = allArticles.sort((a, b) => {
+    return b.data.publishDate.getTime() - a.data.publishDate.getTime();
+  });
+
+  const totalPages = Math.ceil(sortedArticles.length / postsPerPage);
+
+  return Array.from({ length: totalPages }, (_, i) => {
+    const page = i + 1;
+    const start = i * postsPerPage;
+    const end = start + postsPerPage;
+
+    return {
+      params: { page: page === 1 ? undefined : String(page) },
+      props: {
+        articles: sortedArticles.slice(start, end),
+        currentPage: page,
+        totalPages,
+        totalArticles: sortedArticles.length,
+      },
+    };
+  });
+};
+
+interface Props {
+  articles: Awaited<ReturnType<typeof getCollection<'blogs'>>>;
+  currentPage: number;
+  totalPages: number;
+  totalArticles: number;
+}
+
+const { articles, currentPage, totalPages, totalArticles } = Astro.props;
+const postsPerPage = 5;
+
+const pageTitle = currentPage === 1
+  ? pagesConfig.blogs.title
+  : `${pagesConfig.blogs.title} - Page ${currentPage}`;
+---
+
+<BaseLayout>
+  <SEO 
+    slot="head"
+    title={pageTitle}
+    description={pagesConfig.blogs.description}
+    type="website"
+  />
+
+  <main class="page-container">
+    <header class="page-header">
+      <h1 class="page-title">{pagesConfig.blogs.heading}</h1>
+      <p class="page-intro">
+        {pagesConfig.blogs.intro}
+      </p>
+      <PageStats text={totalPages > 1 
+        ? `Showing ${(currentPage - 1) * postsPerPage + 1}–${Math.min(currentPage * postsPerPage, totalArticles)} of ${totalArticles} articles`
+        : `${totalArticles} articles`
+      } />
+    </header>
+
+    {articles.length > 0 ? (
+      <div class="card-list">
+        {articles.map((article) => (
+          <ArticleCard
+            title={article.data.title}
+            slug={article.id}
+            description={article.data.description}
+            publishDate={article.data.publishDate}
+            tags={article.data.tags}
+            basePath="/blogs"
+          />
+        ))}
+      </div>
+    ) : (
+      <p class="empty-state">No articles published yet.</p>
+    )}
+
+    <Pagination 
+      currentPage={currentPage} 
+      totalPages={totalPages} 
+      baseUrl="/blogs" 
+    />
+  </main>
+</BaseLayout>

@@ -1,8 +1,6 @@
 /**
- * Page Metadata Configuration
- * 
- * Centralized SEO metadata for all static pages. Single source of truth
- * for titles and descriptions to ensure consistency across the site.
+ * Page Metadata Configuration:
+ * Centralized SEO metadata for all static pages. 
  * 
  * Usage:
  * ```astro
@@ -55,8 +53,30 @@ export const pagesConfig = {
    */
   home: {
     title: 'Home',
-    description: 'Engineering leader specializing in system architecture, technical decision-making, and delivering measurable business impact.',
+    description: 'Welcome to my personal blog where I share thoughts on software development and machine learning.',
   },
+
+   /**
+   * Blogs listing page (/blogs)
+   */
+  blogs: {
+    title: 'Blogs',
+    description: 'Latest blog posts covering software development, machine learning, and practical lessons from the field.',
+    heading: 'Blogs',
+    intro: 'A running log of what I\'m learning and building.',
+  },
+
+    /**
+   * Contact page (/contact)
+   */
+  contact: {
+    title: 'Contact',
+    description: 'Get in touch to discuss opportunities, collaborations, or technical challenges.',
+    heading: 'Let\'s Talk',
+  },
+
+
+  /** ====================================OLD================================================ */
   
   /**
    * Projects listing page (/projects)
@@ -88,6 +108,7 @@ export const pagesConfig = {
     intro: 'A timeline of my professional growth and learning progression. This isn\'t a resume—it\'s a story of how I\'ve evolved as an engineer, the pivotal moments that shaped my thinking, and the skills I\'ve developed along the way.',
   },
   
+  
   /**
    * Writing/blog listing page (/writing)
    */
@@ -116,15 +137,6 @@ export const pagesConfig = {
     description: 'A comprehensive list of the tools, technologies, and environment I use for development work.',
     heading: 'Uses',
     intro: 'A transparent look at the tools, technologies, and environment that power my development workflow. This page documents what I use and why, helping other engineers discover useful tools and understand my technical context.',
-  },
-  
-  /**
-   * Contact page (/contact)
-   */
-  contact: {
-    title: 'Contact - Get in Touch',
-    description: 'Get in touch to discuss opportunities, collaborations, or technical challenges.',
-    heading: 'Let\'s Talk',
   },
 } as const;
 

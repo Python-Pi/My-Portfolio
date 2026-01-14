@@ -5,22 +5,52 @@
  * Uses Astro's Content Collections API with Zod for type-safe content management.
  * 
  * Collections:
- * - projects: Case studies with structured narrative format
- * - decisions: Architectural and technical decision records
- * - journey: Career timeline entries
- * - writing: Blog posts and articles
- * - uses: Tools, stack, and environment documentation
- * - speaking: Conference talks and presentations
- * - testimonials: Endorsements and recommendations
- * 
- * All collections use the glob loader to read MDX files from their respective directories.
- * Schemas enforce data structure and provide TypeScript types throughout the application.
- * 
+ * - Blogs
+ * - Knowledge Base
+
+
  * @module content.config
  */
 
 import { defineCollection, z } from 'astro:content';
 import { glob } from 'astro/loaders';
+
+/**
+ * Blogs Collection
+ */
+
+const blogCollection = defineCollection({
+  loader: glob({ pattern: '**/*.mdx', base: './src/content/blogs' }),
+  schema: z.object({
+    /** Article title */
+    title: z.string(),
+    
+    /** Article description for SEO and previews */
+    description: z.string(),
+    
+    /** Original publication date */
+    publishDate: z.coerce.date(),
+    
+    /** Last updated date (optional) */
+    updatedDate: z.coerce.date().optional(),
+    
+    /** Tags for categorization */
+    tags: z.array(z.string()).optional(),
+    
+    /** Whether the article is a draft (hidden from production) */
+    draft: z.boolean().default(false),
+  }),
+});
+
+
+
+
+
+
+
+
+
+/** ==================================OLD=============================================== */
 
 /**
  * Projects (Case Studies) Collection
@@ -352,6 +382,7 @@ const testimonialsCollection = defineCollection({
  * and generate TypeScript types for type-safe content queries.
  */
 export const collections = {
+  blogs: blogCollection,
   projects: projectsCollection,
   decisions: decisionsCollection,
   journey: journeyCollection,

@@ -1,32 +1,17 @@
 ---
 /**
  * Home Page
- * 
- * Case-study-first portfolio homepage that immediately showcases real impact and outcomes
- * rather than generic taglines. Features a hero section with featured project snapshots,
- * recent decisions, testimonials, and clear calls-to-action.
- * 
+ * ===========================================
  * Design Philosophy:
- * - Lead with tangible results and case studies
- * - Document decision-making process transparently
- * - Demonstrate value through real project outcomes
- * - Provide multiple entry points (projects, decisions, journey)
+ * - Just my blogs, notes, projects and books I've read
  * 
  * Sections:
- * 1. Hero - Value statement with featured case study snapshots
- * 2. Introduction - Brief personal introduction with journey link
- * 3. Recent Decisions - Latest architectural/technical decisions
- * 4. Testimonials - Social proof from colleagues and clients
- * 5. Thinking - Problems and topics of interest
- * 6. CTA - Call-to-action for work opportunities
- * 
- * Features:
- * - Featured projects showcase (top 2-3)
- * - Recent decisions preview (top 2)
- * - Testimonials integration
- * - Structured data for SEO (WebSite and Person)
- * - Responsive grid layout
- * - Multiple CTAs for different user intents
+ * 1. Hero/Intro
+ * 2. Introduction 
+ * 3. Recent Blogs 
+ * 4. Notes Preview
+ * 5. Books I've Read
+ * 6. Topics of Interest
  * 
  * Route: /
  * 
@@ -37,40 +22,36 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import SEO from '../components/SEO.astro';
 import StructuredData from '../components/StructuredData.astro';
 import ForwardLink from '../components/ForwardLink.astro';
-import Testimonials from '../components/Testimonials.astro';
 import { getCollection } from 'astro:content';
 import { siteConfig } from '../config';
+import {Icon} from 'astro-icon/components';
+
 
 /**
- * Queries and filters featured projects for hero section
- * 
- * Retrieves all projects, filters for featured ones, sorts by custom order
- * (if specified), and limits to top 2 for the hero snapshots.
+ * Imports and Data Fetching
  */
-const allProjects = await getCollection('projects');
-const featuredProjects = allProjects
-  .filter(project => project.data.featured === true)
-  .sort((a, b) => (a.data.order || 999) - (b.data.order || 999))
-  .slice(0, 2);
+const allBlogs = await getCollection('blogs');
+const recentBlogs = allBlogs
+  .sort((a, b) => b.data.publishDate.getTime() - a.data.publishDate.getTime())
+  .slice(0, 3);
+
 
 /**
- * Case snapshots for hero display
- * 
- * Takes up to 3 featured projects to showcase in the hero section,
- * providing immediate evidence of impact and outcomes.
+ * Social Media Icons
  */
-const caseSnapshots = featuredProjects.slice(0, 3);
+const iconNames: Record<string, string> = {
+  github: 'mdi:github',
+  linkedin: 'mdi:linkedin',
+  email: 'mdi:email-outline',
+};
 
-/**
- * Queries recent decisions for preview section
- * 
- * Retrieves all decisions, sorts by date (newest first), and limits to
- * top 2 for the homepage preview.
- */
-const allDecisions = await getCollection('decisions');
-const recentDecisions = allDecisions
-  .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime())
-  .slice(0, 2);
+const socialLinks = Object.entries(siteConfig.social)
+  .filter(([_, url]) => url)
+  .map(([platform, url]) => ({
+    key: platform,
+    label: platform.charAt(0).toUpperCase() + platform.slice(1),
+    url,
+  }));
 ---
 
 <BaseLayout>
@@ -90,98 +71,80 @@ const recentDecisions = allDecisions
     <!-- CASE-FIRST HERO -->
     <section class="hero">
       <div class="hero-grid">
-        <!-- Left: Value Statement -->
+        <!-- Left: Introduction -->
         <div class="hero-left">
           <h1 class="hero-title">
-            I don't just ship projects.<br/>
-            <span class="hero-title-emphasis">I document decisions, trade-offs, and outcomes.</span>
+            Welcome, I'm Tousif! 
           </h1>
-          <p class="hero-sub">
-            A portfolio built around case studies — not screenshots.
-          </p>
           <p class="hero-meta">
-            {siteConfig.author.name} · {siteConfig.author.title}
+            {siteConfig.author.title} · {siteConfig.author.location}
           </p>
+          <div class="social">
+            {socialLinks.map((link) => {
+              const iconName = iconNames[link.key];
+              return (
+                <a
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={link.label}
+                  class="social-link"
+                >
+                  {iconName ? (
+                    <Icon name={iconName} class="social-icon" aria-hidden="true" />
+                  ) : (
+                    <span class="social-label">{link.label}</span>
+                  )}
+                  <span class="sr-only">{link.label}</span>
+                </a>
+              );
+            })}
+          </div>
           <div class="hero-cta">
-            <a href="/projects" class="btn-primary">Explore Case Studies</a>
-            <a href="/decisions" class="btn-secondary">How I Make Decisions</a>
+            <a href="/blogs" class="btn-primary">Explore Blogs</a>
+            <a href="/base" class="btn-secondary">Knowledge Base</a>
           </div>
         </div>
 
-        <!-- Right: Case Snapshots -->
+        <!-- Right: Introduction -->
         <div class="hero-right">
-          <div class="case-snapshots">
-            {caseSnapshots.map((project) => (
-              <a href={`/projects/${project.id}`} class="case-snapshot">
-                <span class="case-label">Case · {project.data.role}</span>
-                <span class="case-title">{project.data.title}</span>
-                <span class="case-outcome">{project.data.outcomeSummary}</span>
-              </a>
-            ))}
-          </div>
+          <p>
+            I am a software developer passionate about building impactful software solutions and exploring machine learning. Welcome to my personal site where I share my projects, thoughts, and experiences in the tech world.
+          </p>
+          <ForwardLink href="/journey" text="Read my journey" variant="muted" />
         </div>
       </div>
     </section>
 
-    <!-- Introduction -->
-    <section class="introduction">
-      <p>
-        I'm {siteConfig.author.name}, {siteConfig.author.title.toLowerCase()} focused on building systems that move real business metrics.
-      </p>
-      <p>
-        Every major decision is documented—because great engineers don't just build things, they explain why.
-      </p>
-      <ForwardLink href="/journey" text="Read my journey" variant="muted" />
-    </section>
-
-    <!-- Recent Decisions -->
-    <section class="recent-decisions">
+    <!-- Blogs -->
+    <section class="recent-blogs">
       <div class="section-header">
-        <h2>Recent Decisions</h2>
-        <ForwardLink href="/decisions" text="View all" variant="muted" />
+        <h1>Recent Blogs</h1>
+        <ForwardLink href="/blogs" text="View all" variant="muted" />
       </div>
       
-      {recentDecisions.length > 0 ? (
-        <div class="decisions-list">
-          {recentDecisions.map((decision) => {
-            const date = new Date(decision.data.date);
+      {recentBlogs.length > 0 ? (
+        <div class="blogs-list">
+          {recentBlogs.map((blog) => {
+            const date = blog.data.publishDate;
             const formattedDate = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
             return (
-              <article class="decision-item">
-                <span class="decision-date">{formattedDate}</span>
-                <h3 class="decision-title">{decision.data.title}</h3>
-                <p class="decision-context">{decision.data.context}</p>
+              <article class="blog-item">
+                <a href={`/blogs/${blog.id}`} class="blog-link">
+                  <span class="blog-date">{formattedDate}</span>
+                  <h3 class="blog-title">{blog.data.title}</h3>
+                  <p class="blog-context">{blog.data.description}</p>
+                </a>
               </article>
             );
           })}
         </div>
       ) : (
-        <p class="no-decisions">No decisions documented yet.</p>
+        <p class="no-blogs">No blogs documented yet.</p>
       )}
-    </section>
+    </section> 
 
-    <!-- Testimonials -->
-    <Testimonials limit={3} />
 
-    <!-- What I Think About -->
-    <section class="thinking">
-      <h2>Problems I Enjoy Solving</h2>
-      <p class="thinking-list">
-        How to scale systems without scaling complexity · When to choose consistency over availability · Making legacy codebases maintainable · Designing APIs that last · Building teams that ship · Turning technical debt into technical investment · Documenting decisions so future-you understands past-you
-      </p>
-    </section>
-
-    <!-- CTA -->
-    <section class="cta">
-      <h2>Let's Work Together</h2>
-      <p>
-        Looking for technical leadership, architectural guidance, or someone who documents their thinking? Let's talk.
-      </p>
-      <div class="cta-buttons">
-        <a href="/projects" class="btn-primary">View My Work</a>
-        <a href="/contact" class="btn-secondary">Get in Touch</a>
-      </div>
-    </section>
   </main>
 
   <style>
@@ -233,6 +196,49 @@ const recentDecisions = allDecisions
       color: var(--color-text-muted);
       margin-bottom: 2rem;
       letter-spacing: 0.01em;
+    }
+
+    .social {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1.75rem;
+    }
+
+    .social-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2rem;
+      height: 2rem;
+      color: var(--color-text-muted);
+      text-decoration: none;
+      transition: color 0.2s ease, transform 0.2s ease;
+    }
+
+    .social-link:hover {
+      color: var(--color-text);
+      transform: translateY(-1px);
+    }
+
+    .social-icon {
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+
+    .social-label {
+      font-size: 0.8125rem;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
     }
 
     .hero-cta {
@@ -340,8 +346,14 @@ const recentDecisions = allDecisions
       color: var(--color-text);
     }
 
-    .recent-decisions {
+    .recent-blogs {
       margin-bottom: 5rem;
+    }
+
+    .section-title {
+      font-size: clamp(1.6rem, 1.4rem + 0.5vw, 1.85rem);
+      font-weight: 600;
+      letter-spacing: -0.015em;
     }
 
     .section-header {
@@ -357,23 +369,33 @@ const recentDecisions = allDecisions
       letter-spacing: -0.01em;
     }
 
-    .decisions-list {
+    .blogs-list {
       display: flex;
       flex-direction: column;
       gap: 0;
       border-top: 1px solid var(--color-border);
     }
 
-    .decision-item {
+    .blog-item {
       padding: 1.5rem 0;
       border-bottom: 1px solid var(--color-border);
     }
 
-    .decision-item:last-child {
+    .blog-item:last-child {
       border-bottom: none;
     }
+    
+    .blog-link {
+      display: block;
+      color: inherit;
+      text-decoration: none;
+    }
 
-    .decision-date {
+    .blog-link:hover .blog-title {
+      text-decoration: underline;
+    }
+
+    .blog-date {
       display: block;
       font-size: 0.75rem;
       font-weight: 500;
@@ -383,7 +405,7 @@ const recentDecisions = allDecisions
       margin-bottom: 0.5rem;
     }
 
-    .decision-title {
+    .blog-title {
       font-size: 1.125rem;
       font-weight: 600;
       line-height: 1.3;
@@ -391,13 +413,13 @@ const recentDecisions = allDecisions
       margin-bottom: 0.5rem;
     }
 
-    .decision-context {
+    .blog-context {
       font-size: 0.9375rem;
       line-height: 1.6;
       color: var(--color-text-secondary);
     }
 
-    .no-decisions {
+    .no-blogs {
       color: var(--color-text-muted);
       font-style: italic;
       padding: 1.5rem 0;
@@ -446,6 +468,50 @@ const recentDecisions = allDecisions
       gap: 1rem;
     }
 
+
+    .social {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .social-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2rem;
+      height: 2rem;
+      color: var(--color-text-muted);
+      text-decoration: none;
+      transition: color 0.2s ease, transform 0.2s ease;
+    }
+
+    .social-link:hover {
+      color: var(--color-text);
+      transform: translateY(-1px);
+    }
+
+    .social-icon {
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+
+    .social-label {
+      font-size: 0.8125rem;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
     @media (max-width: 768px) {
       .home-page {
         padding: 0 1rem 3rem;
@@ -492,7 +558,7 @@ const recentDecisions = allDecisions
         gap: 0.5rem;
       }
 
-      .decision-title {
+      .blog-title {
         font-size: 1rem;
       }
 

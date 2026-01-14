@@ -16,6 +16,7 @@
  * <Footer />
  * ```
  */
+import { Icon } from 'astro-icon/components'
 import { siteConfig } from '../config';
 
 /**
@@ -31,28 +32,46 @@ const currentYear = new Date().getFullYear();
  * 
  * @returns Array of social link objects with platform name and URL
  */
+const iconNames: Record<string, string> = {
+  github: 'mdi:github',
+  linkedin: 'mdi:linkedin',
+  email: 'mdi:email-outline',
+};
+
 const socialLinks = Object.entries(siteConfig.social)
   .filter(([_, url]) => url)
   .map(([platform, url]) => ({
-    platform: platform.charAt(0).toUpperCase() + platform.slice(1),
-    url
+    key: platform,
+    label: platform.charAt(0).toUpperCase() + platform.slice(1),
+    url,
   }));
 ---
 
 <footer class="site-footer">
   <div class="footer-container">
-    <span class="copyright">© {currentYear} {siteConfig.author.name}</span>
+    <span class="copyright">© {currentYear} {siteConfig.author.name} </span>
     
     {socialLinks.length > 0 && (
       <div class="footer-social">
-        {socialLinks.map((link, index) => (
-          <>
-            <a href={link.url} target="_blank" rel="noopener noreferrer">
-              {link.platform}
+        {socialLinks.map((link) => {
+          const iconName = iconNames[link.key];
+          return (
+            <a
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={link.label}
+              class="footer-social-link"
+            >
+              {iconName ? (
+                <Icon name={iconName} class="social-icon" aria-hidden="true" />
+              ) : (
+                <span class="social-label">{link.label}</span>
+              )}
+              <span class="sr-only">{link.label}</span>
             </a>
-            {index < socialLinks.length - 1 && <span class="separator">·</span>}
-          </>
-        ))}
+          );
+        })}
       </div>
     )}
   </div>
@@ -82,24 +101,44 @@ const socialLinks = Object.entries(siteConfig.social)
   .footer-social {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
   }
 
-  .footer-social a {
-    font-size: 0.8125rem;
+  .footer-social-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
     color: var(--color-text-muted);
     text-decoration: none;
-    transition: color 0.2s ease;
+    transition: color 0.2s ease, transform 0.2s ease;
   }
 
-  .footer-social a:hover {
+  .footer-social-link:hover {
     color: var(--color-text);
+    transform: translateY(-1px);
   }
 
-  .separator {
-    color: var(--color-text-muted);
-    opacity: 0.5;
-    user-select: none;
+  .social-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .social-label {
+    font-size: 0.8125rem;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 
   @media (max-width: 480px) {
