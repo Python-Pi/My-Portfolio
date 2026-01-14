@@ -1,11 +1,11 @@
 ---
 /**
  * ArticleLayout
- * 
+ *
  * Specialized layout for blog posts and article detail pages. Extends BaseLayout
  * with article-specific typography, spacing, and content styling optimized for
  * long-form reading experiences.
- * 
+ *
  * Features:
  * - Optimized reading width (800px max)
  * - Enhanced typography for readability
@@ -14,28 +14,28 @@
  * - Tag display styling
  * - Syntax highlighting for code blocks
  * - Responsive design for mobile devices
- * 
+ *
  * Expected content structure:
  * - .article-header: Contains h1, meta info, and tags
  * - .article-content: Main article body with MDX content
  * - .back-link: Navigation back to article list
- * 
+ *
  * Note: SEO meta tags should be handled by the SEO component in each page
  * using the "head" slot, not passed as props to this layout.
- * 
+ *
  * @component
- * 
+ *
  * @example
  * ```astro
  * ---
  * import ArticleLayout from '../layouts/ArticleLayout.astro';
  * import SEO from '../components/SEO.astro';
  * ---
- * 
+ *
  * <ArticleLayout>
- *   <SEO 
+ *   <SEO
  *     slot="head"
- *     title="Getting Started with Astro" 
+ *     title="Getting Started with Astro"
  *     description="A comprehensive guide to building fast websites"
  *   />
  *   <div class="article-header">
@@ -46,7 +46,7 @@
  *       <span>5 min read</span>
  *     </div>
  *   </div>
- *   
+ *
  *   <div class="article-content">
  *     <!-- MDX content here -->
  *   </div>
@@ -54,7 +54,7 @@
  * ```
  */
 
-import BaseLayout from './BaseLayout.astro';
+import BaseLayout from "./BaseLayout.astro";
 ---
 
 <BaseLayout>
@@ -64,7 +64,6 @@ import BaseLayout from './BaseLayout.astro';
   </div>
 
   <style>
-    
     .article-layout {
       max-width: 800px;
       margin: 0 auto;
@@ -181,7 +180,9 @@ import BaseLayout from './BaseLayout.astro';
     }
 
     .article-layout :global(.article-content code) {
-      font-family: ui-monospace, 'JetBrains Mono', 'Cascadia Code', Menlo, Consolas, 'Courier New', monospace;
+      font-family:
+        ui-monospace, "JetBrains Mono", "Cascadia Code", Menlo, Consolas,
+        "Courier New", monospace;
       font-size: 0.9em;
       background: rgba(255, 255, 255, 0.05);
       padding: 0.2em 0.4em;
@@ -293,5 +294,92 @@ import BaseLayout from './BaseLayout.astro';
         padding: var(--space-md);
       }
     }
+
+    /* Copy Button Styles */
+    .article-layout :global(.code-block-wrapper) {
+      position: relative;
+    }
+
+    .article-layout :global(.copy-button) {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      padding: 0.25rem 0.5rem;
+      font-size: 0.75rem;
+      color: var(--color-text-secondary);
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.25rem;
+      cursor: pointer;
+      opacity: 0;
+      transition: all 0.2s ease;
+    }
+
+    .article-layout :global(.code-block-wrapper:hover .copy-button) {
+      opacity: 1;
+    }
+
+    .article-layout :global(.copy-button:hover) {
+      background: rgba(255, 255, 255, 0.2);
+      color: var(--color-text);
+    }
+
+    .article-layout :global(.copy-button.copied) {
+      background: var(--color-accent);
+      color: white;
+      border-color: var(--color-accent);
+    }
   </style>
+
+  <script>
+    function addCopyButtons() {
+      const preBlocks = document.querySelectorAll(".article-content pre");
+
+      preBlocks.forEach((pre) => {
+        // Wrap pre in a relative container if not already wrapped
+        const parent = pre.parentNode as HTMLElement;
+        if (parent?.classList.contains("code-block-wrapper")) return;
+
+        const wrapper = document.createElement("div");
+        wrapper.className = "code-block-wrapper";
+        parent?.insertBefore(wrapper, pre);
+        wrapper.appendChild(pre);
+
+        // Create button
+        const button = document.createElement("button");
+        button.className = "copy-button";
+        button.textContent = "Copy";
+        button.setAttribute("aria-label", "Copy code to clipboard");
+
+        // Add click handler
+        button.addEventListener("click", async () => {
+          const code = pre.querySelector("code");
+          const text =
+            (code as HTMLElement)?.innerText || (pre as HTMLElement).innerText;
+
+          try {
+            await navigator.clipboard.writeText(text);
+            button.textContent = "Copied!";
+            button.classList.add("copied");
+
+            setTimeout(() => {
+              button.textContent = "Copy";
+              button.classList.remove("copied");
+            }, 2000);
+          } catch (err) {
+            console.error("Failed to copy:", err);
+            button.textContent = "Error";
+          }
+        });
+
+        wrapper.appendChild(button);
+      });
+    }
+
+    // Run on initial load
+    addCopyButtons();
+
+    // Run on view transitions if enabled
+    document.addEventListener("astro:page-load", addCopyButtons);
+  </script>
 </BaseLayout>

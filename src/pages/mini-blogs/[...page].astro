@@ -1,0 +1,100 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SEO from '../../components/SEO.astro';
+import Pagination from '../../components/Pagination.astro';
+import ArticleCard from '../../components/ArticleCard.astro';
+import PageStats from '../../components/PageStats.astro';
+import { getCollection } from 'astro:content';
+import { pagesConfig } from '../../pages.config';
+import type { GetStaticPaths } from 'astro';
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const postsPerPage = 5;
+
+  const allEntries = await getCollection('mini-blogs', ({ data }) => data.draft === false);
+
+  const sortedEntries = allEntries.sort((a, b) => {
+    return b.data.publishDate.getTime() - a.data.publishDate.getTime();
+  });
+
+  const totalPages = Math.ceil(sortedEntries.length / postsPerPage) || 1;
+
+  return Array.from({ length: totalPages }, (_, index) => {
+    const page = index + 1;
+    const start = index * postsPerPage;
+    const end = start + postsPerPage;
+
+    return {
+      params: { page: page === 1 ? undefined : String(page) },
+      props: {
+        entries: sortedEntries.slice(start, end),
+        currentPage: page,
+        totalPages,
+        totalEntries: sortedEntries.length,
+      },
+    };
+  });
+};
+
+interface Props {
+  entries: Awaited<ReturnType<typeof getCollection<'mini-blogs'>>>;
+  currentPage: number;
+  totalPages: number;
+  totalEntries: number;
+}
+
+const { entries, currentPage, totalPages, totalEntries } = Astro.props;
+const postsPerPage = 5;
+
+const config = pagesConfig.miniBlogs;
+const pageTitle = currentPage === 1 ? config.title : `${config.title} - Page ${currentPage}`;
+---
+
+<BaseLayout>
+  <SEO 
+    slot="head"
+    title={pageTitle}
+    description={config.description}
+    type="website"
+  />
+
+  <main class="page-container">
+    <header class="page-header">
+      <h1 class="page-title">{config.heading}</h1>
+      {config.intro && (
+        <p class="page-intro">
+          {config.intro}
+        </p>
+      )}
+      <PageStats text={totalEntries === 0
+        ? '0 entries'
+        : totalPages > 1
+          ? `Showing ${(currentPage - 1) * postsPerPage + 1}–${Math.min(currentPage * postsPerPage, totalEntries)} of ${totalEntries} entries`
+          : `${totalEntries} entries`
+      } />
+    </header>
+
+    {entries.length > 0 ? (
+      <div class="card-list">
+        {entries.map((entry) => (
+          <ArticleCard
+            title={entry.data.title}
+            slug={entry.id}
+            description={entry.data.description}
+            publishDate={entry.data.publishDate}
+            tags={entry.data.tags}
+            basePath="/mini-blogs"
+          />
+        ))}
+      </div>
+    ) : (
+      <p class="empty-state">No mini blogs published yet.</p>
+    )}
+
+    <Pagination 
+      currentPage={currentPage} 
+      totalPages={totalPages} 
+      baseUrl="/mini-blogs" 
+    />
+  </main>
+</BaseLayout>

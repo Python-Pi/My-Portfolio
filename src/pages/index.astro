@@ -4,17 +4,17 @@
  * ===========================================
  * Design Philosophy:
  * - Just my blogs, notes, projects and books I've read
- * 
+ *
  * Sections:
  * 1. Hero/Intro
- * 2. Introduction 
- * 3. Recent Blogs 
+ * 2. Introduction
+ * 3. Recent Blogs
  * 4. Notes Preview
  * 5. Books I've Read
  * 6. Topics of Interest
- * 
+ *
  * Route: /
- * 
+ *
  * @page
  */
 
@@ -24,21 +24,18 @@ import StructuredData from '../components/StructuredData.astro';
 import ForwardLink from '../components/ForwardLink.astro';
 import { getCollection } from 'astro:content';
 import { siteConfig } from '../config';
-import {Icon} from 'astro-icon/components';
+import { Icon } from 'astro-icon/components';
 
-
-/**
- * Imports and Data Fetching
- */
 const allBlogs = await getCollection('blogs');
 const recentBlogs = allBlogs
   .sort((a, b) => b.data.publishDate.getTime() - a.data.publishDate.getTime())
+  .slice(0, 2);
+
+const allMiniBlogs = await getCollection('mini-blogs');
+const recentMiniBlogs = allMiniBlogs
+  .sort((a, b) => b.data.publishDate.getTime() - a.data.publishDate.getTime())
   .slice(0, 3);
 
-
-/**
- * Social Media Icons
- */
 const iconNames: Record<string, string> = {
   github: 'mdi:github',
   linkedin: 'mdi:linkedin',
@@ -111,7 +108,7 @@ const socialLinks = Object.entries(siteConfig.social)
           <p>
             I am a software developer passionate about building impactful software solutions and exploring machine learning. Welcome to my personal site where I share my projects, thoughts, and experiences in the tech world.
           </p>
-          <ForwardLink href="/journey" text="Read my journey" variant="muted" />
+          <ForwardLink href="/404" text="Read my journey" variant="muted" />
         </div>
       </div>
     </section>
@@ -124,16 +121,28 @@ const socialLinks = Object.entries(siteConfig.social)
       </div>
       
       {recentBlogs.length > 0 ? (
-        <div class="blogs-list">
+        <div class="blog-card-list">
           {recentBlogs.map((blog) => {
             const date = blog.data.publishDate;
-            const formattedDate = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+            const formattedDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            const tags = blog.data.tags || [];
             return (
-              <article class="blog-item">
-                <a href={`/blogs/${blog.id}`} class="blog-link">
-                  <span class="blog-date">{formattedDate}</span>
-                  <h3 class="blog-title">{blog.data.title}</h3>
-                  <p class="blog-context">{blog.data.description}</p>
+              <article class="blog-card">
+                <a href={`/blogs/${blog.id}`} class="blog-card-link">
+                  <header class="blog-card-header">
+                    <span class="blog-card-date">{formattedDate}</span>
+                    {tags.length > 0 && (
+                      <div class="blog-card-tags">
+                        {tags.slice(0, 4).map((tag) => (
+                          <span class="blog-card-tag">{tag}</span>
+                        ))}
+                        {tags.length > 4 && <span class="blog-card-tag more">+{tags.length - 4}</span>}
+                      </div>
+                    )}
+                  </header>
+                  <h3 class="blog-card-title">{blog.data.title}</h3>
+                  <p class="blog-card-excerpt">{blog.data.description}</p>
+                  <span class="blog-card-cta">Read full article →</span>
                 </a>
               </article>
             );
@@ -143,6 +152,46 @@ const socialLinks = Object.entries(siteConfig.social)
         <p class="no-blogs">No blogs documented yet.</p>
       )}
     </section> 
+
+    <!-- Mini Blogs -->
+    <section class="recent-mini-blogs">
+      <div class="section-header">
+        <h1>Recent Mini Blogs</h1>
+        <ForwardLink href="/mini-blogs" text="View all" variant="muted" />
+      </div>
+
+      {recentMiniBlogs.length > 0 ? (
+        <div class="mini-blogs-grid">
+          {recentMiniBlogs.map((entry) => {
+            const date = entry.data.publishDate;
+            const formattedDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            const tags = entry.data.tags || [];
+            return (
+              <article class="mini-blog-card">
+                <a href={`/mini-blogs/${entry.id}`} class="mini-blog-link">
+                  <header class="mini-blog-header">
+                    <span class="mini-blog-date">{formattedDate}</span>
+                    {tags.length > 0 && (
+                      <div class="mini-blog-tags">
+                        {tags.slice(0, 3).map((tag) => (
+                          <span class="mini-blog-tag">{tag}</span>
+                        ))}
+                        {tags.length > 3 && <span class="mini-blog-tag more">+{tags.length - 3}</span>}
+                      </div>
+                    )}
+                  </header>
+                  <h3 class="mini-blog-title">{entry.data.title}</h3>
+                  <p class="mini-blog-excerpt">{entry.data.description}</p>
+                  <span class="mini-blog-cta">Read mini blog →</span>
+                </a>
+              </article>
+            );
+          })}
+        </div>
+      ) : (
+        <p class="no-blogs">No mini blogs documented yet.</p>
+      )}
+    </section>
 
 
   </main>
@@ -348,6 +397,198 @@ const socialLinks = Object.entries(siteConfig.social)
 
     .recent-blogs {
       margin-bottom: 5rem;
+    }
+
+    .recent-mini-blogs {
+      margin-bottom: 5rem;
+    }
+
+    .blog-card-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .blog-card {
+      background: var(--color-bg-secondary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--border-radius-lg);
+      transition: border-color var(--transition-base), transform var(--transition-base), box-shadow var(--transition-base);
+    }
+
+    .blog-card:hover,
+    .blog-card:focus-within {
+      border-color: var(--color-text-muted);
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .blog-card-link {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      padding: 2rem;
+      height: 100%;
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .blog-card-link:focus-visible {
+      outline: 2px solid var(--color-accent);
+      outline-offset: 4px;
+    }
+
+    .blog-card-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .blog-card-date {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-text-muted);
+    }
+
+    .blog-card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .blog-card-tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      background: var(--color-bg);
+      color: var(--color-text-secondary);
+      border: 1px solid var(--color-border);
+    }
+
+    .blog-card-tag.more {
+      background: transparent;
+      border-style: dashed;
+    }
+
+    .blog-card-title {
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: -0.015em;
+      color: var(--color-text);
+    }
+
+    .blog-card-excerpt {
+      font-size: 1rem;
+      line-height: 1.7;
+      color: var(--color-text-secondary);
+      margin: 0;
+    }
+
+    .blog-card-cta {
+      margin-top: auto;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--color-accent);
+    }
+
+    .mini-blogs-grid {
+      display: grid;
+      gap: 1.5rem;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
+
+    .mini-blog-card {
+      background: var(--color-bg-secondary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--border-radius-md);
+      transition: border-color var(--transition-base), transform var(--transition-base), box-shadow var(--transition-base);
+    }
+
+    .mini-blog-link {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      padding: 1.5rem;
+      height: 100%;
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .mini-blog-card:hover,
+    .mini-blog-card:focus-within {
+      border-color: var(--color-text-muted);
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .mini-blog-link:focus-visible {
+      outline: 2px solid var(--color-accent);
+      outline-offset: 4px;
+    }
+
+    .mini-blog-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+
+    .mini-blog-date {
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-text-muted);
+    }
+
+    .mini-blog-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+
+    .mini-blog-tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.125rem 0.375rem;
+      border-radius: 999px;
+      font-size: 0.6875rem;
+      font-weight: 500;
+      background: var(--color-bg);
+      color: var(--color-text-secondary);
+      border: 1px solid var(--color-border);
+    }
+
+    .mini-blog-tag.more {
+      background: transparent;
+      border-style: dashed;
+    }
+
+    .mini-blog-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--color-text);
+      letter-spacing: -0.01em;
+    }
+
+    .mini-blog-excerpt {
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      color: var(--color-text-secondary);
+      margin: 0;
+    }
+
+    .mini-blog-cta {
+      margin-top: auto;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--color-accent);
     }
 
     .section-title {

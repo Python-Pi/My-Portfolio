@@ -84,6 +84,82 @@ import '../styles/utilities.css';
         e.newDocument.documentElement.setAttribute('data-theme', theme);
       });
     </script>
+
+    <script is:inline>
+      const enhanceCodeBlocks = () => {
+        const blocks = document.querySelectorAll('pre');
+
+        blocks.forEach((pre) => {
+          if (pre.closest('.code-block-wrapper')) {
+            return;
+          }
+
+          const parent = pre.parentNode;
+          if (!parent) {
+            return;
+          }
+
+          const wrapper = document.createElement('div');
+          wrapper.className = 'code-block-wrapper';
+
+          const styles = window.getComputedStyle(pre);
+          wrapper.style.marginTop = styles.marginTop;
+          wrapper.style.marginBottom = styles.marginBottom;
+          wrapper.style.marginLeft = styles.marginLeft;
+          wrapper.style.marginRight = styles.marginRight;
+          pre.style.margin = '0';
+
+          parent.insertBefore(wrapper, pre);
+          wrapper.appendChild(pre);
+
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'copy-button';
+          button.textContent = 'Copy';
+          button.setAttribute('aria-label', 'Copy code to clipboard');
+
+          const copySource = pre.querySelector('code') || pre;
+          const clipboard = navigator.clipboard;
+
+          if (!clipboard) {
+            button.disabled = true;
+            button.textContent = 'Unavailable';
+          }
+
+          button.addEventListener('click', async () => {
+            if (!clipboard) {
+              return;
+            }
+
+            const text = copySource.textContent || '';
+
+            try {
+              await clipboard.writeText(text);
+              button.textContent = 'Copied!';
+              button.classList.add('copied');
+            } catch (err) {
+              console.error('Failed to copy code', err);
+              button.textContent = 'Error';
+            }
+
+            setTimeout(() => {
+              button.textContent = 'Copy';
+              button.classList.remove('copied');
+            }, 2000);
+          });
+
+          wrapper.appendChild(button);
+        });
+      };
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', enhanceCodeBlocks);
+      } else {
+        enhanceCodeBlocks();
+      }
+
+      document.addEventListener('astro:page-load', enhanceCodeBlocks);
+    </script>
     
     <style>
       body {
@@ -100,6 +176,63 @@ import '../styles/utilities.css';
         position: sticky;
         top: 0;
         z-index: 100;
+      }
+
+      main :global(.code-block-wrapper) {
+        position: relative;
+        display: block;
+      }
+
+      main :global(.code-block-wrapper pre) {
+        margin: 0;
+      }
+
+      main :global(.copy-button) {
+        position: absolute;
+        top: 0.75rem;
+        right: 0.75rem;
+        padding: 0.25rem 0.6rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--color-text-secondary);
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: var(--border-radius-sm);
+        cursor: pointer;
+        opacity: 0;
+        transition: opacity var(--transition-base), background var(--transition-base), color var(--transition-base);
+      }
+
+      [data-theme="light"] main :global(.copy-button) {
+        background: rgba(0, 0, 0, 0.04);
+        border-color: rgba(0, 0, 0, 0.08);
+        color: var(--color-text-secondary);
+      }
+
+      main :global(.code-block-wrapper:hover .copy-button),
+      main :global(.copy-button:focus-visible) {
+        opacity: 1;
+      }
+
+      main :global(.copy-button:hover) {
+        background: rgba(255, 255, 255, 0.16);
+        color: var(--color-text);
+      }
+
+      [data-theme="light"] main :global(.copy-button:hover) {
+        background: rgba(0, 0, 0, 0.08);
+        color: var(--color-text);
+      }
+
+      main :global(.copy-button:focus-visible) {
+        outline: 2px solid var(--color-accent);
+        outline-offset: 2px;
+      }
+
+      main :global(.copy-button.copied) {
+        background: var(--color-accent);
+        border-color: var(--color-accent);
+        color: #fff;
       }
     </style>
   </head>

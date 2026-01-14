@@ -32,8 +32,9 @@ import icon from "astro-icon";
  * Uses Vite's loadEnv to read environment variables at build time.
  * Falls back to 'production' if NODE_ENV is not set.
  */
-const { SITE_URL } = loadEnv(process.env.NODE_ENV || 'production', process.cwd(), '');
-const { SITE_BASE_PATH } = loadEnv(process.env.NODE_ENV || 'production', process.cwd(), '');
+
+const SITE_URL = "https://tousif.in"
+
 
 /**
  * Astro configuration object

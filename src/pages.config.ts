@@ -67,6 +67,16 @@ export const pagesConfig = {
   },
 
     /**
+     * Mini blogs listing page (/mini-blogs)
+     */
+    miniBlogs: {
+      title: 'Mini Blogs',
+      description: 'Short-form notes and quick takeaways that capture learnings before they become full blogs.',
+      heading: 'Mini Blogs',
+      intro: 'Bite-sized updates that don\'t need a full article.',
+    },
+
+    /**
    * Contact page (/contact)
    */
   contact: {
