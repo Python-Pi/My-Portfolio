@@ -31,6 +31,7 @@ import sitemap from '@astrojs/sitemap';
  * Falls back to 'production' if NODE_ENV is not set.
  */
 const { SITE_URL } = loadEnv(process.env.NODE_ENV || 'production', process.cwd(), '');
+const { SITE_BASE_PATH } = loadEnv(process.env.NODE_ENV || 'production', process.cwd(), '');
 
 /**
  * Astro configuration object
@@ -71,8 +72,7 @@ export default defineConfig({
    * 
    * Set SITE_URL in your .env file (e.g., https://example.com)
    */
-  site: SITE_URL || 'https://example.com',
-  
+  site: SITE_URL || 'https://example.com',  
   /**
    * Environment variables schema (Astro v5+)
    * 
