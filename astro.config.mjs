@@ -26,15 +26,7 @@ import sitemap from '@astrojs/sitemap';
 import icon from "astro-icon";
 
 
-/**
- * Load environment variables from .env file
- * 
- * Uses Vite's loadEnv to read environment variables at build time.
- * Falls back to 'production' if NODE_ENV is not set.
- */
-
-const SITE_URL = "https://tousif.in/"
-
+const SITE_URL = "http://tousif.in/"
 
 /**
  * Astro configuration object
