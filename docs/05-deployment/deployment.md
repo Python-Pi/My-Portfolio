@@ -56,8 +56,8 @@ npm run preview  # Preview build locally
 
 ```javascript
 export default defineConfig({
-  site: 'https://username.github.io',
-  base: '/repository-name',  // Remove if using custom domain
+  site: 'https://Python-Pi.github.io/',
+  base: '/My-Portfolio',  // Remove if using custom domain
 });
 ```
 
