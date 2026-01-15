@@ -27,16 +27,9 @@
  * Page metadata interface
  */
 interface PageMeta {
-  /** Page title (used in browser tab and SEO) */
   title: string;
-  
-  /** Page description (used in meta tags and SEO) */
   description: string;
-  
-  /** Page heading (displayed as h1, optional - defaults to title) */
   heading?: string;
-  
-  /** Page intro text (displayed below heading, optional) */
   intro?: string;
 }
 
@@ -64,6 +57,16 @@ export const pagesConfig = {
     description: 'Latest blog posts covering software development, machine learning, and practical lessons from the field.',
     heading: 'Blogs',
     intro: 'A running log of what I\'m learning and building.',
+  },
+
+  /**
+   * Research papers listing page (/research-papers)
+   */
+  researchPapers: {
+    title: 'Research Papers',
+    description: 'Summaries and notes from academic papers I\'m studying, with key takeaways for practitioners.',
+    heading: 'Research Papers',
+    intro: 'Paper breakdowns and insights from the research I read.',
   },
 
   /**

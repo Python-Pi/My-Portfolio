@@ -31,6 +31,21 @@ const blogCollection = defineCollection({
   }),
 });
 
+const researchPapersCollection = defineCollection({
+  loader: glob({ pattern: '**/*.mdx', base: './src/content/research-papers' }),
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    publishDate: z.coerce.date(),
+    updatedDate: z.coerce.date().optional(),
+    authors: z.array(z.string()).optional(),
+    venue: z.string().optional(),
+    tags: z.array(z.string()).optional(),
+    link: z.string().url().optional(),
+    draft: z.boolean().default(false),
+  }),
+});
+
 const miniBlogCollection = defineCollection({
   loader: glob({ pattern: '**/*.mdx', base: './src/content/mini-blogs' }),
   schema: z.object({
@@ -349,6 +364,7 @@ const testimonialsCollection = defineCollection({
  */
 export const collections = {
   blogs: blogCollection,
+  'research-papers': researchPapersCollection,
   'mini-blogs': miniBlogCollection,
   decisions: decisionsCollection,
   journey: journeyCollection,

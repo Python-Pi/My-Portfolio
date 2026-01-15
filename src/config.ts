@@ -59,9 +59,6 @@ export const siteConfig = {
     /** LinkedIn profile URL */
     linkedin: 'https://www.linkedin.com/in/tousif-ahamad-81b379121/',
 
-    /** Twitter profile URL */
-    twitter: 'https://twitter.com/tousifahamad',
-
     /** Mail */
     email: 'mailto:tousfchinnu@gmail.com',
   },
@@ -71,6 +68,7 @@ export const siteConfig = {
    */
   nav: [
     { label: 'Blogs', href: '/blogs' },
+    { label: 'Research Papers', href: '/research-papers' },
       { label: 'Mini Blogs', href: '/mini-blogs' },
     // { label: 'Knowledge Base', href: '/base' },
     // { label: 'Journey', href: '/journey' },

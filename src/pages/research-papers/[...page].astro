@@ -1,0 +1,99 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SEO from '../../components/SEO.astro';
+import Pagination from '../../components/Pagination.astro';
+import ArticleCard from '../../components/ArticleCard.astro';
+import PageStats from '../../components/PageStats.astro';
+import { getCollection } from 'astro:content';
+import { pagesConfig } from '../../pages.config';
+import type { GetStaticPaths } from 'astro';
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const papersPerPage = 5;
+
+  const allPapers = await getCollection('research-papers', ({ data }) => data.draft === false);
+
+  const sortedPapers = allPapers.sort((a, b) => {
+    return b.data.publishDate.getTime() - a.data.publishDate.getTime();
+  });
+
+  const totalPages = Math.ceil(sortedPapers.length / papersPerPage) || 1;
+
+  return Array.from({ length: totalPages }, (_, i) => {
+    const page = i + 1;
+    const start = i * papersPerPage;
+    const end = start + papersPerPage;
+
+    return {
+      params: { page: page === 1 ? undefined : String(page) },
+      props: {
+        papers: sortedPapers.slice(start, end),
+        currentPage: page,
+        totalPages,
+        totalPapers: sortedPapers.length,
+      },
+    };
+  });
+};
+
+interface Props {
+  papers: Awaited<ReturnType<typeof getCollection<'research-papers'>>>;
+  currentPage: number;
+  totalPages: number;
+  totalPapers: number;
+}
+
+const { papers, currentPage, totalPages, totalPapers } = Astro.props;
+const papersPerPage = 5;
+
+const pageTitle = currentPage === 1
+  ? pagesConfig.researchPapers.title
+  : `${pagesConfig.researchPapers.title} - Page ${currentPage}`;
+---
+
+<BaseLayout>
+  <SEO
+    slot="head"
+    title={pageTitle}
+    description={pagesConfig.researchPapers.description}
+    type="website"
+  />
+
+  <main class="page-container">
+    <header class="page-header">
+      <h1 class="page-title">{pagesConfig.researchPapers.heading}</h1>
+      <p class="page-intro">
+        {pagesConfig.researchPapers.intro}
+      </p>
+      <PageStats
+        text={totalPages > 1
+          ? `Showing ${(currentPage - 1) * papersPerPage + 1}–${Math.min(currentPage * papersPerPage, totalPapers)} of ${totalPapers} papers`
+          : `${totalPapers} papers`
+        }
+      />
+    </header>
+
+    {papers.length > 0 ? (
+      <div class="card-list">
+        {papers.map((paper) => (
+          <ArticleCard
+            title={paper.data.title}
+            slug={paper.id}
+            description={paper.data.description}
+            publishDate={paper.data.publishDate}
+            tags={paper.data.tags}
+            basePath="/research-papers"
+          />
+        ))}
+      </div>
+    ) : (
+      <p class="empty-state">No research papers published yet.</p>
+    )}
+
+    <Pagination
+      currentPage={currentPage}
+      totalPages={totalPages}
+      baseUrl="/research-papers"
+    />
+  </main>
+</BaseLayout>

@@ -36,6 +36,11 @@ const recentMiniBlogs = allMiniBlogs
   .sort((a, b) => b.data.publishDate.getTime() - a.data.publishDate.getTime())
   .slice(0, 3);
 
+const allResearchPapers = await getCollection('research-papers');
+const recentResearchPapers = allResearchPapers
+  .sort((a, b) => b.data.publishDate.getTime() - a.data.publishDate.getTime())
+  .slice(0, 2);
+
 const iconNames: Record<string, string> = {
   github: 'mdi:github',
   linkedin: 'mdi:linkedin',
@@ -99,24 +104,28 @@ const socialLinks = Object.entries(siteConfig.social)
           </div>
           <div class="hero-cta">
             <a href="/blogs" class="btn-primary">Explore Blogs</a>
-            <a href="/base" class="btn-secondary">Knowledge Base</a>
+            <a href="/research-papers" class="btn-secondary">Literature Review</a>
           </div>
         </div>
 
         <!-- Right: Introduction -->
         <div class="hero-right">
           <p>
-            I am a software developer passionate about building impactful software solutions and exploring machine learning. Welcome to my personal site where I share my projects, thoughts, and experiences in the tech world.
+            I am a <b>software developer</b> who loves building stuff, learning new technologies and exploring the cutting edge of Computer Science
+            including Machine Learning and Artificial Intelligence. I just made this website to document my learnings and share my thoughts. 
+            <br>
+            <b>Feel free to explore around!</b>
           </p>
           <ForwardLink href="/404" text="Read my journey" variant="muted" />
         </div>
       </div>
     </section>
+    
 
     <!-- Blogs -->
     <section class="recent-blogs">
       <div class="section-header">
-        <h1>Recent Blogs</h1>
+        <h1>Featured Blogs</h1>
         <ForwardLink href="/blogs" text="View all" variant="muted" />
       </div>
       
@@ -156,7 +165,7 @@ const socialLinks = Object.entries(siteConfig.social)
     <!-- Mini Blogs -->
     <section class="recent-mini-blogs">
       <div class="section-header">
-        <h1>Recent Mini Blogs</h1>
+        <h1>Featured Mini Blogs</h1>
         <ForwardLink href="/mini-blogs" text="View all" variant="muted" />
       </div>
 
@@ -193,6 +202,45 @@ const socialLinks = Object.entries(siteConfig.social)
       )}
     </section>
 
+    <!-- Research Papers -->
+    <section class="recent-research-papers">
+      <div class="section-header">
+        <h1>Literature Reviews</h1>
+        <ForwardLink href="/research-papers" text="View all" variant="muted" />
+      </div>
+      
+      {recentResearchPapers.length > 0 ? (
+        <div class="blog-card-list">
+          {recentResearchPapers.map((paper) => {
+            const date = paper.data.publishDate;
+            const formattedDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            const tags = paper.data.tags || [];
+            return (
+              <article class="blog-card">
+                <a href={`/research-papers/${paper.id}`} class="blog-card-link">
+                  <header class="blog-card-header">
+                    <span class="blog-card-date">{formattedDate}</span>
+                    {tags.length > 0 && (
+                      <div class="blog-card-tags">
+                        {tags.slice(0, 4).map((tag) => (
+                          <span class="blog-card-tag">{tag}</span>
+                        ))}
+                        {tags.length > 4 && <span class="blog-card-tag more">+{tags.length - 4}</span>}
+                      </div>
+                    )}
+                  </header>
+                  <h3 class="blog-card-title">{paper.data.title}</h3>
+                  <p class="blog-card-excerpt">{paper.data.description}</p>
+                  <span class="blog-card-cta">Read full article →</span>
+                </a>
+              </article>
+            );
+          })}
+        </div>
+      ) : (
+        <p class="no-blogs">No research papers documented yet.</p>
+      )}
+    </section> 
 
   </main>
 
