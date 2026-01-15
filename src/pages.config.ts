@@ -56,7 +56,7 @@ export const pagesConfig = {
     title: 'Blogs',
     description: 'Latest blog posts covering software development, machine learning, and practical lessons from the field.',
     heading: 'Blogs',
-    intro: 'A running log of what I\'m learning and building.',
+    intro: 'An ongoing log of what I’m learning, building, and thinking',
   },
 
   /**
