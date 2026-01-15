@@ -56,7 +56,7 @@ export const pagesConfig = {
     description: 'Welcome to my personal blog where I share thoughts on software development and machine learning.',
   },
 
-   /**
+  /**
    * Blogs listing page (/blogs)
    */
   blogs: {
@@ -66,24 +66,16 @@ export const pagesConfig = {
     intro: 'A running log of what I\'m learning and building.',
   },
 
-    /**
-     * Mini blogs listing page (/mini-blogs)
-     */
-    miniBlogs: {
-      title: 'Mini Blogs',
-      description: 'Short-form notes and quick takeaways that capture learnings before they become full blogs.',
-      heading: 'Mini Blogs',
-      intro: 'Bite-sized updates that don\'t need a full article.',
-    },
-
-    /**
-   * Contact page (/contact)
+  /**
+   * Mini blogs listing page (/mini-blogs)
    */
-  contact: {
-    title: 'Contact',
-    description: 'Get in touch to discuss opportunities, collaborations, or technical challenges.',
-    heading: 'Let\'s Talk',
+  miniBlogs: {
+    title: 'Mini Blogs',
+    description: 'Short-form notes and quick takeaways that capture learnings before they become full blogs.',
+    heading: 'Mini Blogs',
+    intro: 'Bite-sized updates that don\'t need a full article.',
   },
+
 
 
   /** ====================================OLD================================================ */

@@ -1,8 +1,8 @@
 {
-  "name": "",
+  "name": "tousif-portfolio",
   "type": "module",
   "version": "1.1.0",
-  "description": "A case-study-first portfolio theme for Astro",
+  "description": "My portfolio website",
   "keywords": [
     "astro",
     "theme",
@@ -10,12 +10,8 @@
     "case-study",
     "professional"
   ],
-  "author": "Erland <hello@erland.me>",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/erlandv/case.git"
-  },
-  "homepage": "https://case.erland.me",
+  "author": "Tousif <tousfchinnu@gmail.com>",
+  "homepage": "https://tousif.in",
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
@@ -29,6 +25,9 @@
     "@iconify-json/mdi": "^1.2.3",
     "astro": "^5.16.7",
     "astro-icon": "^1.1.5",
+    "katex": "^0.16.27",
+    "rehype-katex": "^7.0.1",
+    "remark-math": "^6.0.0",
     "sharp": "^0.34.5"
   },
   "devDependencies": {

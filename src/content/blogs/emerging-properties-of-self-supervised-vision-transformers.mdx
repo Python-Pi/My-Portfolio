@@ -1,0 +1,90 @@
+---
+title: "Emerging Properties in Self-Supervised Vision Transformers"
+description: "A Meta AI research paper exploring the capabilities of vision transformers trained with self-supervised learning."
+publishDate: 2026-01-15
+tags:
+  - "Computer Science"
+  - "Machine Learning"
+  - "self-supervised-learning"
+  - "DINO"
+draft: false
+---
+
+[Research Paper](https://openaccess.thecvf.com/content/ICCV2021/papers/Caron_Emerging_Properties_in_Self-Supervised_Vision_Transformers_ICCV_2021_paper.pdf)
+
+**Authors**: Mathilde Caron, Hugo Touvron, Ishan Misra, Hervé Jégou, Julien Mairal, Piotr Bojanowski, Armand Joulin
+
+This paper is about exploring **self supervised learning in vision transformers (ViTs)**. The authors investigate how ViTs trained with self-supervised methods compare to standard methods like convolutional neural networks (CNNs) and supervised learning with ViTs. 
+The key findings of the paper include:
+- ViTs trained with self-supervised learning can learn rich semantic features compared to CNNs or supervised ViTs.
+- These features are also excellent K-NN classifiers, demonstrating strong performance on image classification tasks.
+- They also developed a method called DINO (self-**DI**stillation with **NO** labels) which allows ViTs to learn from unlabeled data effectively.
+
+### Key Concepts
+**Self Supervised Learning**: A type of machine learning where the model learns from the data itself without explicit labels.
+
+**Vision Transformers (ViTs)**: A type of neural network architecture that applies the transformer model, originally designed for natural language processing, to image data.
+
+**Momentum Encoder**: 
+A momentum encoder is a method used in self-supervised learning to make training more stable and reliable.
+
+Instead of training only one neural network, we use two versions of the same model:
+- **Student (online model)**:
+  Learns quickly and is updated normally using backpropagation.
+- **Teacher (momentum encoder)**:
+  Learns slowly and is not trained directly.
+  Instead, it is updated by taking a slow moving average of the student’s weights.
+
+In simple terms: The student learns fast, and the teacher slowly follows the student.
+
+**Multi-crop augmentation**: A data augmentation technique where multiple crops of different sizes are taken from the same image to create diverse training samples.
+
+**[CLS] token**: In transformer models, The [CLS] token acts like a summary node that gathers information from all other tokens through self-attention.
+
+## Introduction 
+
+$\qquad$ Tranformers have emerged as a powerful architecture in computer vision but in the early days of it's adoption mostly with supervised learning,
+the improvements offered by transformers over convolutional neural networks (CNNs) were modest at best even though they need significantly more resources to train.
+
+One of the main reason transformers dominated the Natural Language Processing (NLP) field was due to the use of self-supervised methods,
+in the form of close procedure in BERT or language modeling in GPT. These self-supervised pretraining objectives use the words
+in a sentence to create pretext tasks that provide a richer learning signal than the supervised objective of predicting a single label per sentence.
+
+Similarly, in images, image level supervision often reduces the rich visual information contained in an image to a single concept selected from a predefined set of a few thousand categories of objects. 
+That's why self supervised learning with convnets was tried before which is the inspiration for this paper to explore self supervised learning with vision transformers.
+
+## Related Work
+
+$\qquad$ A large amount of work on self-supervised learning focusess on **discriminative approaches** that learn representations by comparing different views of the same image.
+These are coined as **instance classification** methods where each image is treated as its own class and the model learns to discriminate between different images.
+During training, the model is asked to distinguish one image from all others, not by memorizing pixel values, but by learning representations that remain consistent under
+various data augmentations such as cropping, color jittering, or blurring. Two augmented views of the same image are considered positives, while views from different images 
+are treated as negatives. The use of strong augmentations is crucial here, as it defines the invariances the model should learn and prevents trivial solutions.
+
+This forces the model to learn meaningful features that capture the essence of the images rather than just memorizing them.
+Although instance classification has proven effective at learning rich visual features, it comes with important limitations. 
+Explicitly discriminating between all images does not align perfectly with semantic understanding: images of the same object category 
+(for example, two different dogs) are still treated as distinct and are actively pushed apart in feature space. As a result, 
+semantic grouping emerges only indirectly, as a side effect of learning to solve the discrimination task.
+
+Additionally, this approach poses scalability and efficiency challenges.
+
+### Self Learning 
+
+Self learning is a strategy where the model tries the propogate information from a set of labelled data
+to a larger set of unlabelled data. The model is first trained on the labelled data and then used
+to predict the labels for the unlabelled data
+
+## Conclusion
+
+The paper has identified several interesting properties of self-supervised ViTs that do not emerge from supervised ViTs or convnets:
+- Self-supervised ViT features explicitly contain the scene layout and, in particular, object boundaries. This information is directly accessible in the self-attention modules of the last block.
+![Object boundaries](/emerging-properties-of-self-supervised-vits/img1.PNG)
+- Self-supervised ViT features perform particularly well with a basic nearest neighbors classifier (k-NN) without any finetuning, 
+linear classifier nor data augmentation, achieving 78.3% top-1 accuracy on ImageNet.
+
+*Note: Top-1 accuracy measures how often a model’s single most confident prediction is correct*
+
+- Importance of using smaller patches (8x8/16x16) for self-supervised ViTs to learn better features.
+
+

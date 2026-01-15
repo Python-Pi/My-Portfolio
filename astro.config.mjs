@@ -1,40 +1,13 @@
-/**
- * Astro Configuration
- * 
- * Main configuration file for the Astro site. Defines build settings, integrations,
- * environment variables schema, image optimization, and markdown processing.
- * 
- * Configuration Sections:
- * - Output mode: Static site generation (SSG)
- * - Integrations: MDX for rich content, Sitemap for SEO
- * - Environment variables: Type-safe schema with defaults
- * - Image optimization: Sharp-based processing with responsive sizes
- * - Markdown: Syntax highlighting with Shiki
- * 
- * Setup:
- * 1. Copy .env.example to .env
- * 2. Set SITE_URL and other environment variables
- * 3. Run `npm run dev` for development or `npm run build` for production
- * 
- * @see https://astro.build/config
- */
-
 import { defineConfig, envField } from 'astro/config';
 import { loadEnv } from 'vite';
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 import icon from "astro-icon";
-
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 
 const SITE_URL = "http://tousif.in/"
 
-/**
- * Astro configuration object
- * 
- * Defines all build-time settings, integrations, and optimizations for the site.
- * 
- * @see https://astro.build/config
- */
 export default defineConfig({
   /**
    * Output mode: Static Site Generation (SSG)
@@ -49,9 +22,13 @@ export default defineConfig({
    * 
    * - MDX: Enables MDX support for rich content authoring with JSX components
    * - Sitemap: Automatically generates sitemap.xml for search engines
+   * - Icon: Provides easy access to a wide range of icons
    */
   integrations: [
-    mdx(),
+    mdx({
+      remarkPlugins: [remarkMath],
+      rehypePlugins: [rehypeKatex],
+    }),
     sitemap(),
     icon(),
   ],
@@ -66,43 +43,8 @@ export default defineConfig({
    * - Open Graph tags
    * - RSS feeds
    * 
-   * Set SITE_URL in your .env file (e.g., https://example.com)
    */
   site: SITE_URL || 'https://example.com',  
-  /**
-   * Environment variables schema (Astro v5+)
-   * 
-   * Defines type-safe environment variables with validation and defaults.
-   * All variables are client-side accessible and public.
-   * 
-   * Categories:
-   * - Site: URL, language, title, description
-   * - Author: Name, title, bio, email, location
-   * - Social: GitHub, LinkedIn, Twitter, Mastodon, Bluesky
-   */
-  env: {
-    schema: {
-      // Site configuration
-      SITE_URL: envField.string({ context: 'client', access: 'public', default: 'https://example.com' }),
-      SITE_LANGUAGE: envField.string({ context: 'client', access: 'public', default: 'en' }),
-      SITE_TITLE: envField.string({ context: 'client', access: 'public', default: 'Professional Portfolio' }),
-      SITE_DESCRIPTION: envField.string({ context: 'client', access: 'public', default: 'Engineering leader specializing in system architecture, technical decision-making, and delivering measurable business impact.' }),
-      
-      // Author information
-      SITE_AUTHOR_NAME: envField.string({ context: 'client', access: 'public', default: 'Your Name' }),
-      SITE_AUTHOR_TITLE: envField.string({ context: 'client', access: 'public', default: 'Senior Software Engineer' }),
-      SITE_AUTHOR_BIO: envField.string({ context: 'client', access: 'public', default: 'Engineering leader focused on solving complex technical challenges through thoughtful architecture and pragmatic trade-off analysis.' }),
-      SITE_AUTHOR_EMAIL: envField.string({ context: 'client', access: 'public', default: 'hello@example.com' }),
-      SITE_AUTHOR_LOCATION: envField.string({ context: 'client', access: 'public', default: '' }),
-      
-      // Social media links (empty string = hidden)
-      SOCIAL_GITHUB: envField.string({ context: 'client', access: 'public', default: '' }),
-      SOCIAL_LINKEDIN: envField.string({ context: 'client', access: 'public', default: '' }),
-      SOCIAL_TWITTER: envField.string({ context: 'client', access: 'public', default: '' }),
-      SOCIAL_MASTODON: envField.string({ context: 'client', access: 'public', default: '' }),
-      SOCIAL_BLUESKY: envField.string({ context: 'client', access: 'public', default: '' }),
-    },
-  },
   
   /**
    * Image optimization configuration
@@ -132,14 +74,10 @@ export default defineConfig({
   
   /**
    * Markdown configuration
-   * 
-   * Configures markdown processing and syntax highlighting.
-   * 
-   * Shiki Configuration:
-   * - Theme: GitHub Dark for consistent code highlighting
-   * - Wrap: Enables line wrapping for long code lines
    */
   markdown: {
+    remarkPlugins: [remarkMath],
+    rehypePlugins: [rehypeKatex],
     shikiConfig: {
       theme: 'github-dark',
       wrap: true
