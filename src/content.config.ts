@@ -3,21 +3,11 @@
  * 
  * Defines all content collections for the site with their schemas and validation rules.
  * Uses Astro's Content Collections API with Zod for type-safe content management.
- * 
- * Collections:
- * - Blogs
- * - Knowledge Base
-
-
  * @module content.config
  */
 
 import { defineCollection, z } from 'astro:content';
 import { glob } from 'astro/loaders';
-
-/**
- * Blogs Collection
- */
 
 const blogCollection = defineCollection({
   loader: glob({ pattern: '**/*.mdx', base: './src/content/blogs' }),
@@ -28,6 +18,8 @@ const blogCollection = defineCollection({
     updatedDate: z.coerce.date().optional(),
     tags: z.array(z.string()).optional(),
     draft: z.boolean().default(false),
+    featured: z.boolean().default(false),
+    status: z.enum(['published', 'ongoing', 'archived']).default('published'),
   }),
 });
 
@@ -43,6 +35,8 @@ const researchPapersCollection = defineCollection({
     tags: z.array(z.string()).optional(),
     link: z.string().url().optional(),
     draft: z.boolean().default(false),
+    featured: z.boolean().default(false),
+    status: z.enum(['published', 'ongoing', 'archived']).default('published'),
   }),
 });
 
@@ -60,71 +54,8 @@ const miniBlogCollection = defineCollection({
 
 
 
+/** ==================================STILL IN DEVELOPMENT==================================================== */
 
-
-
-/** ==================================OLD=============================================== */
-
-/**
- * Decisions Collection
- * 
- * Architectural and technical decision records documenting the context,
- * decision made, alternatives considered, and reasoning.
- * 
- * Features:
- * - Context and decision documentation
- * - Alternatives with pros/cons analysis
- * - Reasoning explanation
- * - Optional tags for categorization
- * - Related project and decision slugs for cross-referencing
- */
-const decisionsCollection = defineCollection({
-  loader: glob({ pattern: '**/*.mdx', base: './src/content/decisions' }),
-  schema: z.object({
-    /** Decision title */
-    title: z.string(),
-    
-    /** Date the decision was made */
-    date: z.coerce.date(),
-    
-    /** Context and background for the decision */
-    context: z.string(),
-    
-    /** The decision that was made */
-    decision: z.string(),
-    
-    /** Alternative options considered */
-    alternatives: z.array(z.object({
-      option: z.string(),
-      pros: z.array(z.string()).optional(),
-      cons: z.array(z.string()).optional(),
-    })),
-    
-    /** Reasoning behind the decision */
-    reasoning: z.string(),
-    
-    /** Optional tags for categorization */
-    tags: z.array(z.string()).optional(),
-    
-    /** Related project slugs for cross-referencing */
-    relatedProjects: z.array(z.string()).optional(),
-    
-    /** Related decision slugs for cross-referencing */
-    relatedDecisions: z.array(z.string()).optional(),
-  }),
-});
-
-/**
- * Journey Timeline Collection
- * 
- * Career growth and learning progression timeline with milestones,
- * learning experiences, and career transitions.
- * 
- * Features:
- * - Three entry types (milestone, learning, transition)
- * - Skills/technologies per entry
- * - Optional expandable content
- */
 const journeyCollection = defineCollection({
   loader: glob({ pattern: '**/*.mdx', base: './src/content/journey' }),
   schema: z.object({
@@ -145,135 +76,6 @@ const journeyCollection = defineCollection({
   }),
 });
 
-/**
- * Writing (Blog) Collection
- * 
- * Blog posts and technical articles with MDX support.
- * 
- * Features:
- * - Draft mode for unpublished content
- * - Publish and update dates
- * - Optional tags for categorization
- */
-const writingCollection = defineCollection({
-  loader: glob({ pattern: '**/*.mdx', base: './src/content/writing' }),
-  schema: z.object({
-    /** Article title */
-    title: z.string(),
-    
-    /** Article description for SEO and previews */
-    description: z.string(),
-    
-    /** Original publication date */
-    publishDate: z.coerce.date(),
-    
-    /** Last updated date (optional) */
-    updatedDate: z.coerce.date().optional(),
-    
-    /** Tags for categorization */
-    tags: z.array(z.string()).optional(),
-    
-    /** Whether the article is a draft (hidden from production) */
-    draft: z.boolean().default(false),
-  }),
-});
-
-/**
- * Uses Collection
- * 
- * Documentation of tools, technologies, and environment used in development workflow.
- * 
- * Features:
- * - Three categories (tools, stack, environment)
- * - Items with name, description, and optional URL
- * - Custom order for intentional presentation
- */
-const usesCollection = defineCollection({
-  loader: glob({ pattern: '**/*.mdx', base: './src/content/uses' }),
-  schema: z.object({
-    /** Category for grouping */
-    category: z.enum(['tools', 'stack', 'environment']),
-    
-    /** List of items in this category */
-    items: z.array(z.object({
-      name: z.string(),
-      description: z.string(),
-      url: z.string().url().optional(),
-    })),
-    
-    /** Sort order within category */
-    order: z.number(),
-  }),
-});
-
-/**
- * Projects Collection
- * 
- * Detailed case studies documenting project background, decisions, impact,
- * and key learnings across engineering initiatives.
- */
-const projectsCollection = defineCollection({
-  loader: glob({ pattern: '**/*.mdx', base: './src/content/projects' }),
-  schema: z.object({
-    title: z.string(),
-    role: z.string(),
-    year: z.number(),
-    outcomeSummary: z.string(),
-    overview: z.string(),
-    problem: z.string(),
-    constraints: z.array(z.string()),
-    approach: z.string(),
-    keyDecisions: z.array(z.object({
-      decision: z.string(),
-      reasoning: z.string(),
-      alternatives: z.array(z.string()).optional(),
-    })),
-    techStack: z.array(z.string()),
-    duration: z.string().optional(),
-    teamSize: z.number().optional(),
-    impact: z.object({
-      metrics: z.array(z.object({
-        label: z.string(),
-        value: z.string(),
-      })).optional(),
-      qualitative: z.string().optional(),
-    }),
-    learnings: z.array(z.string()).optional(),
-    featured: z.boolean().default(false),
-    order: z.number().optional(),
-    status: z.enum(['completed', 'ongoing', 'archived']).optional(),
-    relatedProjects: z.array(z.string()).optional(),
-    relatedDecisions: z.array(z.string()).optional(),
-    coverImage: z.object({
-      src: z.string(),
-      alt: z.string(),
-      caption: z.string().optional(),
-    }).optional(),
-    gallery: z.array(z.object({
-      src: z.string(),
-      alt: z.string(),
-      caption: z.string().optional(),
-    })).optional(),
-    statusHighlights: z.array(z.object({
-      label: z.string(),
-      detail: z.string(),
-    })).optional(),
-    lessonsLearned: z.array(z.string()).optional(),
-  }),
-});
-
-/**
- * Speaking/Talks Collection
- * 
- * Conference talks, meetup presentations, podcast appearances, and workshops.
- * 
- * Features:
- * - Five talk types (conference, meetup, podcast, workshop, webinar)
- * - Links to slides and video recordings
- * - Event information and location
- * - Optional topics and duration
- * - Featured flag for highlighting
- */
 const speakingCollection = defineCollection({
   loader: glob({ pattern: '**/*.mdx', base: './src/content/speaking' }),
   schema: z.object({
@@ -315,46 +117,6 @@ const speakingCollection = defineCollection({
   }),
 });
 
-/**
- * Testimonials Collection
- * 
- * Endorsements and recommendations from colleagues and clients.
- * 
- * Features:
- * - Person details (name, role, company)
- * - Relationship context
- * - Quote text
- * - Optional LinkedIn profile link
- * - Featured flag for homepage display
- */
-const testimonialsCollection = defineCollection({
-  loader: glob({ pattern: '**/*.mdx', base: './src/content/testimonials' }),
-  schema: z.object({
-    /** Person's name */
-    name: z.string(),
-    
-    /** Person's role/title */
-    role: z.string(),
-    
-    /** Person's company */
-    company: z.string(),
-    
-    /** Relationship context (e.g., "Worked together at Company X") */
-    relationship: z.string(),
-    
-    /** Testimonial quote */
-    quote: z.string(),
-    
-    /** LinkedIn profile URL (optional) */
-    linkedin: z.string().url().optional(),
-    
-    /** Whether to feature on homepage */
-    featured: z.boolean().default(false),
-    
-    /** Date of the testimonial */
-    date: z.coerce.date(),
-  }),
-});
 
 /**
  * Export all collections
@@ -366,11 +128,6 @@ export const collections = {
   blogs: blogCollection,
   'research-papers': researchPapersCollection,
   'mini-blogs': miniBlogCollection,
-  decisions: decisionsCollection,
   journey: journeyCollection,
-  writing: writingCollection,
-  uses: usesCollection,
-  projects: projectsCollection,
   speaking: speakingCollection,
-  testimonials: testimonialsCollection,
 };
