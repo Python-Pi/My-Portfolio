@@ -68,8 +68,8 @@ export const siteConfig = {
    */
   nav: [
     { label: 'Blogs', href: '/blogs' },
-    { label: 'Research Papers', href: '/research-papers' },
     { label: 'Mini Blogs', href: '/mini-blogs' },
+    { label: 'Research Papers', href: '/research-papers' },
     
     // { label: 'Journey', href: '/journey' },
     // { label: 'Speaking', href: '/speaking' },
