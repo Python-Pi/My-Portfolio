@@ -59,6 +59,9 @@ export const siteConfig = {
     /** LinkedIn profile URL */
     linkedin: 'https://www.linkedin.com/in/tousif-ahamad-81b379121/',
 
+    /** Twitter profile URL */
+    twitter: 'https://twitter.com/tousifahamad',
+
     /** Mail */
     email: 'mailto:tousfchinnu@gmail.com',
   },

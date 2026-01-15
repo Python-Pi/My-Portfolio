@@ -140,6 +140,16 @@ export const pagesConfig = {
     heading: 'Uses',
     intro: 'A transparent look at the tools, technologies, and environment that power my development workflow. This page documents what I use and why, helping other engineers discover useful tools and understand my technical context.',
   },
+
+  /**
+   * Contact page (/contact)
+   */
+  contact: {
+    title: 'Contact - Let’s Connect',
+    description: 'Get in touch for collaborations, questions, or speaking invitations.',
+    heading: 'Let’s Connect',
+    intro: 'Have a project in mind or just want to say hi? I’d love to hear from you.',
+  },
 } as const;
 
 /**

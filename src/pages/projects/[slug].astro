@@ -87,7 +87,7 @@ const {
   keyDecisions,
   techStack,
   impact,
-  learnings,
+  learnings = [],
   relatedProjects,
   relatedDecisions,
   status,
@@ -101,6 +101,9 @@ const statusConfig = {
 };
 const statusInfo = statusConfig[status || 'completed'];
 
+const impactQualitative = impact.qualitative ?? '';
+const impactMetrics = impact.metrics ?? [];
+
 /**
  * Calculates reading time from all case study content
  * 
@@ -113,7 +116,7 @@ const allText = [
   approach,
   ...constraints,
   ...keyDecisions.map(d => `${d.decision} ${d.reasoning} ${d.alternatives?.join(' ') || ''}`),
-  impact.qualitative,
+  impactQualitative,
   ...learnings,
   project.body || '',
 ].join(' ');
@@ -242,11 +245,13 @@ const readingTime = formatReadingTime(calculateReadingTime(allText));
       <h2>Result & Impact</h2>
       
       {/* Display metrics with visualization */}
-      {impact.metrics && impact.metrics.length > 0 && (
-        <ImpactMetrics metrics={impact.metrics} />
+      {impactMetrics.length > 0 && (
+        <ImpactMetrics metrics={impactMetrics} />
       )}
       
-      <p class="impact-qualitative">{impact.qualitative}</p>
+      {impactQualitative && (
+        <p class="impact-qualitative">{impactQualitative}</p>
+      )}
     </section>
 
     <!-- Learnings Section -->

@@ -192,6 +192,62 @@ const usesCollection = defineCollection({
 });
 
 /**
+ * Projects Collection
+ * 
+ * Detailed case studies documenting project background, decisions, impact,
+ * and key learnings across engineering initiatives.
+ */
+const projectsCollection = defineCollection({
+  loader: glob({ pattern: '**/*.mdx', base: './src/content/projects' }),
+  schema: z.object({
+    title: z.string(),
+    role: z.string(),
+    year: z.number(),
+    outcomeSummary: z.string(),
+    overview: z.string(),
+    problem: z.string(),
+    constraints: z.array(z.string()),
+    approach: z.string(),
+    keyDecisions: z.array(z.object({
+      decision: z.string(),
+      reasoning: z.string(),
+      alternatives: z.array(z.string()).optional(),
+    })),
+    techStack: z.array(z.string()),
+    duration: z.string().optional(),
+    teamSize: z.number().optional(),
+    impact: z.object({
+      metrics: z.array(z.object({
+        label: z.string(),
+        value: z.string(),
+      })).optional(),
+      qualitative: z.string().optional(),
+    }),
+    learnings: z.array(z.string()).optional(),
+    featured: z.boolean().default(false),
+    order: z.number().optional(),
+    status: z.enum(['completed', 'ongoing', 'archived']).optional(),
+    relatedProjects: z.array(z.string()).optional(),
+    relatedDecisions: z.array(z.string()).optional(),
+    coverImage: z.object({
+      src: z.string(),
+      alt: z.string(),
+      caption: z.string().optional(),
+    }).optional(),
+    gallery: z.array(z.object({
+      src: z.string(),
+      alt: z.string(),
+      caption: z.string().optional(),
+    })).optional(),
+    statusHighlights: z.array(z.object({
+      label: z.string(),
+      detail: z.string(),
+    })).optional(),
+    lessonsLearned: z.array(z.string()).optional(),
+  }),
+});
+
+/**
  * Speaking/Talks Collection
  * 
  * Conference talks, meetup presentations, podcast appearances, and workshops.
@@ -298,6 +354,7 @@ export const collections = {
   journey: journeyCollection,
   writing: writingCollection,
   uses: usesCollection,
+  projects: projectsCollection,
   speaking: speakingCollection,
   testimonials: testimonialsCollection,
 };
