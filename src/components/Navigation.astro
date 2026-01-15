@@ -52,6 +52,25 @@ const isActive = (href: string) => {
 ---
 
 <nav class="site-nav" aria-label="Main navigation">
+  <a href="/" class="nav-brand" aria-label="Go to homepage">
+    <span class="nav-brand__logo">
+      <img
+        src="/logo-white.svg"
+        alt={`${siteConfig.title} logo`}
+        width="40"
+        height="40"
+        class="nav-brand__image nav-brand__image--dark"
+        loading="eager"
+      />
+      <img
+        src="/logo-black.svg"
+        alt={`${siteConfig.title} logo`}
+        width="40"
+        height="40"
+        class="nav-brand__image nav-brand__image--light"
+      />
+    </span>
+  </a>
   <div class="nav-scroll">
     <ul class="nav-list">
       {navItems.map((item) => (
@@ -110,6 +129,37 @@ const isActive = (href: string) => {
     margin-bottom: var(--space-md);
   }
 
+  .nav-brand {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: 0 var(--space-md);
+  }
+
+  .nav-brand__logo {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .nav-brand__image {
+    display: block;
+    width: 40px;
+    height: 40px;
+  }
+
+  .nav-brand__image--light {
+    display: none;
+  }
+
+  :global([data-theme="light"]) .nav-brand__image--light {
+    display: block;
+  }
+
+  :global([data-theme="light"]) .nav-brand__image--dark {
+    display: none;
+  }
+
   .nav-scroll {
     flex: 1;
     overflow-x: auto;
@@ -162,6 +212,7 @@ const isActive = (href: string) => {
     flex-shrink: 0;
     display: flex;
     align-items: center;
+    gap: 0.5rem;
     padding: 0 0.75rem;
     border-left: 1px solid var(--color-border);
     background: var(--color-bg);
@@ -186,11 +237,16 @@ const isActive = (href: string) => {
       padding: 0.5rem 1rem;
     }
 
+    .nav-brand {
+      padding: 0 0.75rem 0 1rem;
+    }
+
     .nav-link {
       font-size: 0.75rem;
     }
 
     .nav-end {
+      gap: 0.4rem;
       padding: 0 0.5rem;
     }
 
