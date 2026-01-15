@@ -26,6 +26,7 @@ export default defineConfig({
    */
   integrations: [
     mdx({
+      extendMarkdownConfig: true,
       remarkPlugins: [remarkMath],
       rehypePlugins: [rehypeKatex],
     }),

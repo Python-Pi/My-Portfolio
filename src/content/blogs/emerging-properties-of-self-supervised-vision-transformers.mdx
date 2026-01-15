@@ -20,6 +20,103 @@ The key findings of the paper include:
 - These features are also excellent K-NN classifiers, demonstrating strong performance on image classification tasks.
 - They also developed a method called DINO (self-**DI**stillation with **NO** labels) which allows ViTs to learn from unlabeled data effectively.
 
+## Introduction 
+
+$$\qquad$$ Tranformers have emerged as a powerful architecture in computer vision but in the early days of it's adoption mostly with supervised learning,
+the improvements offered by transformers over convolutional neural networks (CNNs) were modest at best even though they need significantly more resources to train.
+
+One of the main reason transformers dominated the Natural Language Processing (NLP) field was due to the use of self-supervised methods,
+in the form of close procedure in BERT or language modeling in GPT. These self-supervised pretraining objectives use the words
+in a sentence to create pretext tasks that provide a richer learning signal than the supervised objective of predicting a single label per sentence.
+
+Similarly, in images, image level supervision often reduces the rich visual information contained in an image to a single concept selected from a predefined set of a few thousand categories of objects. 
+That's why self supervised learning with convnets was tried before which is the inspiration for this paper to explore self supervised learning with vision transformers.
+
+## Related Work
+
+$$\qquad$$ A large amount of work on self-supervised learning focusess on **discriminative approaches** that learn representations by comparing different views of the same image.
+These are coined as **instance classification** methods where each image is treated as its own class and the model learns to discriminate between different images.
+During training, the model is asked to distinguish one image from all others, not by memorizing pixel values, but by learning representations that remain consistent under
+various data augmentations such as cropping, color jittering, or blurring. Two augmented views of the same image are considered positives, while views from different images 
+are treated as negatives. The use of strong augmentations is crucial here, as it defines the invariances the model should learn and prevents trivial solutions.
+
+This forces the model to learn meaningful features that capture the essence of the images rather than just memorizing them.
+Although instance classification has proven effective at learning rich visual features, it comes with important limitations. 
+Explicitly discriminating between all images does not align perfectly with semantic understanding: images of the same object category 
+(for example, two different dogs) are still treated as distinct and are actively pushed apart in feature space. As a result, 
+semantic grouping emerges only indirectly, as a side effect of learning to solve the discrimination task.
+
+Additionally, this approach poses scalability and efficiency challenges.
+
+### Self Learning 
+
+$$\qquad$$ Self learning is a strategy where the model tries the propogate information from a set of labelled data
+to a larger set of unlabelled data. The model is first trained on the labelled data and then used
+to predict the labels for the unlabelled data (also called psuedo-labelling). The model is then retrained on the combined dataset of labelled and pseudo-labelled data.
+Doing this iteratively over time helps propagate the label information from the labeled subset to the unlabeled majority, improving the quality of learned features.
+
+The propagation can be done in two ways:
+- **Hard propagation**: The model assigns a single pseudo-label to each unlabeled example based on its highest-confidence prediction.
+- **Soft propagation**: The model assigns a probability distribution over all possible labels to each unlabeled example. Soft labels carry richer information, such as uncertainty and inter-class similarity, and tend to produce better and more stable learning outcomes.
+
+### Knowledge Distillation 
+
+$$\qquad$$ When soft labels are used, self learning becomes closely related to Knowledge Distillation, where a large pre-trained model (the teacher)
+is used to generate soft labels for training a smaller model (the student). Knowledge distillation has been shown to be effective for model compression.
+
+Both of the above mechanisms are a way to transfer information from a stronger signal to a weaker one. 
+
+### Knowledge Distillation with no labels 
+
+$$\qquad$$ The idea of knowledge distallation can be pushed even further by removing the need for any labels at all. In this case, 
+the teacher model itself emerges during training. The teacher model is slowly updated as an exponential moving average of the student model.
+
+The model learns by making different views (augmentations) of the input, the teacher's predictions are used as soft labels for the student, 
+even though neither models has access to ground labels. The teacher is dynamic in this case compared to traditional knowledge distillation where the teacher is pre-trained and fixed.
+
+## Approach
+
+### SSL with Knowledge Distillation
+
+Knowledge distillation is a methodology where we train a student model  $$ g_s $$ to match the output of the teacher model $$ g_t $$. 
+Given an input image $$ x $$, both the networks output a probability distribution over $$ K $$ dimensions (classes) denoted by $$ P_s $$ and $$ P_t $$. 
+The probability $$ P $$ of network $$ g $$ is obtained by applying a softmax on the output logits of the network.
+
+```math
+P_s(x)^{(i)} =
+\frac{
+  \exp\!\left( g_{s}(x)^{(i)} \,/\, \tau_s \right)
+}{
+  \sum_{k=1}^{K}
+  \exp\!\left( g_{s}(x)^{(k)} \,/\, \tau_s \right)
+}
+```
+where $$ \tau_s > 0 $$ is the temperature parameter that controls the smoothness/sharpness of the output distribution. 
+Higher values of $$ \tau $$ produce softer probability distributions over classes whereas lower values produce sharper distributions.
+
+
+Given a fixed teacher network $$ g_t $$, the student network $$ g_s $$ is trained to minimize the cross-entropy loss between the two distributions:
+
+```math
+\min_{s} \; H\!\left(P_t(x),\, P_s(x)\right)
+```
+where $$ H(q, p) = - \sum_{y} q(y) \log p(y) $$ 
+
+
+
+## Conclusion
+
+The paper has identified several interesting properties of self-supervised ViTs that do not emerge from supervised ViTs or convnets:
+- Self-supervised ViT features explicitly contain the scene layout and, in particular, object boundaries. This information is directly accessible in the self-attention modules of the last block.
+![Object boundaries](/emerging-properties-of-self-supervised-vits/img1.PNG)
+- Self-supervised ViT features perform particularly well with a basic nearest neighbors classifier (k-NN) without any finetuning, 
+linear classifier nor data augmentation, achieving 78.3% top-1 accuracy on ImageNet.
+
+*Note: Top-1 accuracy measures how often a model’s single most confident prediction is correct*
+
+- Importance of using smaller patches (8x8/16x16) for self-supervised ViTs to learn better features.
+
+
 ### Key Concepts
 **Self Supervised Learning**: A type of machine learning where the model learns from the data itself without explicit labels.
 
@@ -41,50 +138,16 @@ In simple terms: The student learns fast, and the teacher slowly follows the stu
 
 **[CLS] token**: In transformer models, The [CLS] token acts like a summary node that gathers information from all other tokens through self-attention.
 
-## Introduction 
+**Softmax Function**: A mathematical function that converts a vectors of numners into probabilities that sum to 1.
 
-$\qquad$ Tranformers have emerged as a powerful architecture in computer vision but in the early days of it's adoption mostly with supervised learning,
-the improvements offered by transformers over convolutional neural networks (CNNs) were modest at best even though they need significantly more resources to train.
+```math
+\text{Softmax}(z_i) = \frac{e^{z_i}}{\sum_{j} e^{z_j}}
+```
 
-One of the main reason transformers dominated the Natural Language Processing (NLP) field was due to the use of self-supervised methods,
-in the form of close procedure in BERT or language modeling in GPT. These self-supervised pretraining objectives use the words
-in a sentence to create pretext tasks that provide a richer learning signal than the supervised objective of predicting a single label per sentence.
+**Cross Entropy Loss**: A loss function used in classification tasks to measure the difference between two probability distributions.
+Consider the two distributions $$q(y)$$ and $$p(y)$$ . The cross-entropy loss is defined as:
 
-Similarly, in images, image level supervision often reduces the rich visual information contained in an image to a single concept selected from a predefined set of a few thousand categories of objects. 
-That's why self supervised learning with convnets was tried before which is the inspiration for this paper to explore self supervised learning with vision transformers.
-
-## Related Work
-
-$\qquad$ A large amount of work on self-supervised learning focusess on **discriminative approaches** that learn representations by comparing different views of the same image.
-These are coined as **instance classification** methods where each image is treated as its own class and the model learns to discriminate between different images.
-During training, the model is asked to distinguish one image from all others, not by memorizing pixel values, but by learning representations that remain consistent under
-various data augmentations such as cropping, color jittering, or blurring. Two augmented views of the same image are considered positives, while views from different images 
-are treated as negatives. The use of strong augmentations is crucial here, as it defines the invariances the model should learn and prevents trivial solutions.
-
-This forces the model to learn meaningful features that capture the essence of the images rather than just memorizing them.
-Although instance classification has proven effective at learning rich visual features, it comes with important limitations. 
-Explicitly discriminating between all images does not align perfectly with semantic understanding: images of the same object category 
-(for example, two different dogs) are still treated as distinct and are actively pushed apart in feature space. As a result, 
-semantic grouping emerges only indirectly, as a side effect of learning to solve the discrimination task.
-
-Additionally, this approach poses scalability and efficiency challenges.
-
-### Self Learning 
-
-Self learning is a strategy where the model tries the propogate information from a set of labelled data
-to a larger set of unlabelled data. The model is first trained on the labelled data and then used
-to predict the labels for the unlabelled data
-
-## Conclusion
-
-The paper has identified several interesting properties of self-supervised ViTs that do not emerge from supervised ViTs or convnets:
-- Self-supervised ViT features explicitly contain the scene layout and, in particular, object boundaries. This information is directly accessible in the self-attention modules of the last block.
-![Object boundaries](/emerging-properties-of-self-supervised-vits/img1.PNG)
-- Self-supervised ViT features perform particularly well with a basic nearest neighbors classifier (k-NN) without any finetuning, 
-linear classifier nor data augmentation, achieving 78.3% top-1 accuracy on ImageNet.
-
-*Note: Top-1 accuracy measures how often a model’s single most confident prediction is correct*
-
-- Importance of using smaller patches (8x8/16x16) for self-supervised ViTs to learn better features.
-
-
+```math
+H(q, p) = - \sum_{y} q(y) \log p(y)
+```
+A lower cross-entropy loss indicates that both the distributions are similar. Also, the negative sign is added because the log probabilities are negative.
