@@ -19,7 +19,7 @@ const blogCollection = defineCollection({
     tags: z.array(z.string()).optional(),
     draft: z.boolean().default(false),
     featured: z.boolean().default(false),
-    status: z.enum(['published', 'ongoing', 'archived']).default('published'),
+    status: z.enum(['published', 'ongoing', 'archived']).default('ongoing'),
   }),
 });
 
@@ -36,7 +36,24 @@ const researchPapersCollection = defineCollection({
     link: z.string().url().optional(),
     draft: z.boolean().default(false),
     featured: z.boolean().default(false),
-    status: z.enum(['published', 'ongoing', 'archived']).default('published'),
+    status: z.enum(['published', 'ongoing', 'archived']).default('ongoing'),
+  }),
+});
+
+const booksCollection = defineCollection({
+  loader: glob({ pattern: '**/*.mdx', base: './src/content/books' }),
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    publishDate: z.coerce.date(),
+    updatedDate: z.coerce.date().optional(),
+    authors: z.array(z.string()).optional(),
+    publisher: z.string().optional(),
+    link: z.string().url().optional(),
+    tags: z.array(z.string()).optional(),
+    draft: z.boolean().default(false),
+    featured: z.boolean().default(false),
+    status: z.enum(['published', 'ongoing', 'archived']).default('ongoing'),
   }),
 });
 
@@ -127,6 +144,7 @@ const speakingCollection = defineCollection({
 export const collections = {
   blogs: blogCollection,
   'research-papers': researchPapersCollection,
+  books: booksCollection,
   'mini-blogs': miniBlogCollection,
   journey: journeyCollection,
   speaking: speakingCollection,

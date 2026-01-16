@@ -70,6 +70,7 @@ export const siteConfig = {
     { label: 'Blogs', href: '/blogs' },
     { label: 'Mini Blogs', href: '/mini-blogs' },
     { label: 'Research Papers', href: '/research-papers' },
+    { label: 'Books', href: '/books' },
     
     // { label: 'Journey', href: '/journey' },
     // { label: 'Speaking', href: '/speaking' },

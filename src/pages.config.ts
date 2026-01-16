@@ -45,6 +45,16 @@ export const pagesConfig = {
   },
 
   /**
+   * Books listing page (/books)
+   */
+  books: {
+    title: 'Books',
+    description: 'Highlights, summaries, and reflections from the books I\'ve read and am currently exploring.',
+    heading: 'Books',
+    intro: 'Reading notes and lessons from the titles shaping my thinking.',
+  },
+
+  /**
    * Mini blogs listing page (/mini-blogs)
    */
   miniBlogs: {

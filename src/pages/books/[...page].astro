@@ -1,0 +1,101 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SEO from '../../components/SEO.astro';
+import Pagination from '../../components/Pagination.astro';
+import ArticleCard from '../../components/ArticleCard.astro';
+import PageStats from '../../components/PageStats.astro';
+import { getCollection } from 'astro:content';
+import { pagesConfig } from '../../pages.config';
+import type { GetStaticPaths } from 'astro';
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const booksPerPage = 5;
+
+  const allBooks = await getCollection('books', ({ data }) => data.draft === false);
+
+  const sortedBooks = allBooks.sort((a, b) => {
+    return b.data.publishDate.getTime() - a.data.publishDate.getTime();
+  });
+
+  const totalPages = Math.ceil(sortedBooks.length / booksPerPage) || 1;
+
+  return Array.from({ length: totalPages }, (_, i) => {
+    const page = i + 1;
+    const start = i * booksPerPage;
+    const end = start + booksPerPage;
+
+    return {
+      params: { page: page === 1 ? undefined : String(page) },
+      props: {
+        books: sortedBooks.slice(start, end),
+        currentPage: page,
+        totalPages,
+        totalBooks: sortedBooks.length,
+      },
+    };
+  });
+};
+
+interface Props {
+  books: Awaited<ReturnType<typeof getCollection<'books'>>>;
+  currentPage: number;
+  totalPages: number;
+  totalBooks: number;
+}
+
+const { books, currentPage, totalPages, totalBooks } = Astro.props as Props;
+const booksPerPage = 5;
+
+const pageTitle = currentPage === 1
+  ? pagesConfig.books.title
+  : `${pagesConfig.books.title} - Page ${currentPage}`;
+---
+
+<BaseLayout>
+  <SEO
+    slot="head"
+    title={pageTitle}
+    description={pagesConfig.books.description}
+    type="website"
+  />
+
+  <main class="page-container">
+    <header class="page-header">
+      <h1 class="page-title">{pagesConfig.books.heading}</h1>
+      <p class="page-intro">
+        {pagesConfig.books.intro}
+      </p>
+      <PageStats
+        text={totalPages > 1
+          ? `Showing ${(currentPage - 1) * booksPerPage + 1}–${Math.min(currentPage * booksPerPage, totalBooks)} of ${totalBooks} books`
+          : `${totalBooks} ${totalBooks === 1 ? 'book' : 'books'}`
+        }
+      />
+    </header>
+
+    {books.length > 0 ? (
+      <div class="card-list">
+        {books.map((book) => (
+          <ArticleCard
+            title={book.data.title}
+            slug={book.id}
+            description={book.data.description}
+            publishDate={book.data.publishDate}
+            tags={book.data.tags}
+            basePath="/books"
+            featured={book.data.featured}
+            status={book.data.status}
+          />
+        ))}
+      </div>
+    ) : (
+      <p class="empty-state">No books logged yet.</p>
+    )}
+
+    <Pagination
+      currentPage={currentPage}
+      totalPages={totalPages}
+      baseUrl="/books"
+    />
+  </main>
+</BaseLayout>
