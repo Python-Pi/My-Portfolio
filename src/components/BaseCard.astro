@@ -47,7 +47,7 @@ const { href, class: className } = Astro.props;
   <slot name="badge" />
   <span class="card-meta"><slot name="meta" /></span>
   <span class="card-title"><slot name="title" /></span>
-  <span class="card-description"><slot name="description" /></span>
+  <div class="card-description"><slot name="description" /></div>
   <slot name="tags" />
   <slot />
 </a>

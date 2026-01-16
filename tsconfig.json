@@ -10,5 +10,15 @@
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true
-  }
+  },
+  "exclude": [
+    "public/pagefind",
+    "dist"
+  ],
+  "include": [
+    "src",
+    "astro.config.mjs",
+    "env.d.ts",
+    "tsconfig.json"
+  ]
 }

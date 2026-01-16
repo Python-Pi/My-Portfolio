@@ -1,0 +1,264 @@
+---
+import '@pagefind/default-ui/css/ui.css';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SEO from '../components/SEO.astro';
+import { siteConfig } from '../config';
+
+const pageTitle = `Search - ${siteConfig.title}`;
+const pageDescription = 'Search across blogs, mini blogs, research papers, and books.';
+const backUrl = Astro.url.pathname;
+---
+
+<BaseLayout>
+  <SEO
+    slot="head"
+    title={pageTitle}
+    description={pageDescription}
+    type="website"
+  />
+
+  <main class="page-container">
+    <header class="page-header">
+      <h1 class="page-title">Search</h1>
+      <p class="page-intro">Search anything you want to...</p>
+    </header>
+
+    <div
+      id="pagefind-search"
+      data-backurl={backUrl}
+      transition:persist
+      class="search-wrapper"
+    ></div>
+  </main>
+
+  <style>
+    .search-wrapper {
+      margin-top: 2rem;
+    }
+
+    .search-dev-warning {
+      margin-bottom: 1.5rem;
+      padding: 1rem;
+      border-radius: 0.75rem;
+      background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+      border: 1px solid color-mix(in srgb, var(--color-accent) 35%, transparent);
+      color: var(--color-text);
+    }
+
+    .search-dev-warning code {
+      font-family: var(--font-family-mono, ui-monospace);
+      background: rgba(0, 0, 0, 0.75);
+      color: var(--color-bg);
+      padding: 0.15rem 0.35rem;
+      border-radius: 0.35rem;
+      font-size: 0.9rem;
+    }
+
+    .search-error {
+      padding: 1rem;
+      border-radius: 0.75rem;
+      border: 1px solid var(--color-border);
+      background: var(--color-bg-secondary);
+    }
+
+    .search-error__details {
+      margin-top: 0.5rem;
+      font-size: 0.875rem;
+      color: var(--color-text-secondary, var(--color-text));
+      word-break: break-word;
+    }
+  </style>
+  <style is:global>
+    #pagefind-search {
+      --pagefind-ui-font: var(--font-family-base, system-ui);
+      --pagefind-ui-text: var(--color-text);
+      --pagefind-ui-background: var(--color-bg);
+      --pagefind-ui-border: var(--color-border);
+      --pagefind-ui-primary: var(--color-accent);
+      --pagefind-ui-tag: var(--color-bg-secondary);
+      --pagefind-ui-border-radius: 0.5rem;
+      --pagefind-ui-border-width: 1px;
+      --pagefind-ui-image-border-radius: 10px;
+      --pagefind-ui-image-box-ratio: 3 / 2;
+    }
+
+    #pagefind-search form::before {
+      background-color: var(--color-text-secondary);
+    }
+
+    #pagefind-search input {
+      font-weight: 500;
+      border: 1px solid var(--color-border);
+      background: var(--color-bg-secondary);
+    }
+
+    #pagefind-search input:focus-visible {
+      outline: 2px solid var(--color-accent);
+      outline-offset: 2px;
+    }
+
+    #pagefind-search .pagefind-ui__result-title a {
+      color: var(--color-accent);
+      outline-offset: 2px;
+    }
+
+    #pagefind-search .pagefind-ui__result-title a:focus-visible,
+    #pagefind-search .pagefind-ui__search-clear:focus-visible {
+      text-decoration: none;
+      outline: 2px dashed var(--color-accent);
+    }
+
+    #pagefind-search .pagefind-ui__result:last-of-type {
+      border-bottom: none;
+    }
+  </style>
+
+  <script is:inline type="module">
+    const PAGEFIND_SELECTOR = '#pagefind-search';
+    const isDev = (() => {
+      try {
+        return Boolean(import.meta && import.meta.env && import.meta.env.DEV);
+      } catch (error) {
+        return false;
+      }
+    })();
+
+    const onIdle = window.requestIdleCallback || ((cb) => window.setTimeout(cb, 1));
+    const PAGEFIND_FALLBACK_SRC = '/pagefind/pagefind-ui.js';
+
+    const loadScriptOnce = (src) => {
+      const existing = document.querySelector(`script[data-pagefind-bundle="${src}"]`);
+      if (existing) {
+        return new Promise((resolve, reject) => {
+          if (typeof window.PagefindUI === 'function') {
+            resolve();
+            return;
+          }
+          existing.addEventListener('load', () => resolve(), { once: true });
+          existing.addEventListener('error', (event) => reject(event.error ?? new Error(`Failed to load ${src}`)), { once: true });
+        });
+      }
+
+      return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = src;
+        script.async = true;
+        script.dataset.pagefindBundle = src;
+        script.addEventListener('load', () => resolve(), { once: true });
+        script.addEventListener('error', () => reject(new Error(`Failed to load ${src}`)), { once: true });
+        document.head.appendChild(script);
+      });
+    };
+
+    const loadPagefindLibrary = async () => {
+      if (window.__pagefindUILoader) {
+        return window.__pagefindUILoader;
+      }
+
+      window.__pagefindUILoader = (async () => {
+        try {
+          const module = await import('@pagefind/default-ui');
+          if (module?.PagefindUI) {
+            return module.PagefindUI;
+          }
+        } catch (primaryError) {
+          console.warn('Pagefind default UI import failed, attempting fallback bundle.', primaryError);
+        }
+
+        await loadScriptOnce(PAGEFIND_FALLBACK_SRC);
+        if (typeof window.PagefindUI === 'function') {
+          return window.PagefindUI;
+        }
+
+        throw new Error('Pagefind UI global missing after loading fallback bundle.');
+      })();
+
+      return window.__pagefindUILoader;
+    };
+
+    async function loadPagefindUI(container, params) {
+      try {
+        const PagefindUI = await loadPagefindLibrary();
+
+        // Development warning when no index is available yet
+        if (isDev && !container.querySelector('.search-dev-warning')) {
+          container.insertAdjacentHTML(
+            'afterbegin',
+            `
+              <div class="search-dev-warning">
+                <p><strong>Heads up!</strong> Run <code>npm run build</code> once to generate search results during development.</p>
+              </div>
+            `
+          );
+        }
+
+        const search = new PagefindUI({
+          element: PAGEFIND_SELECTOR,
+          showSubResults: true,
+          showImages: false,
+          processTerm(term) {
+            params.set('q', term);
+            history.replaceState(history.state, '', `?${params.toString()}`);
+
+            const backUrl = container.dataset?.backurl ?? '';
+            sessionStorage.setItem('search:backUrl', `${backUrl}?${params.toString()}`);
+
+            return term;
+          },
+        });
+
+        const initialQuery = params.get('q');
+        if (initialQuery) {
+          search.triggerSearch(initialQuery);
+        }
+
+        const searchInput = container.querySelector('.pagefind-ui__search-input');
+        const clearButton = container.querySelector('.pagefind-ui__search-clear');
+
+        const resetSearchParam = (event) => {
+          const value = (event?.target instanceof HTMLInputElement) ? event.target.value : '';
+          if (!value.trim()) {
+            history.replaceState(history.state, '', window.location.pathname);
+          }
+        };
+
+        searchInput?.addEventListener('input', resetSearchParam);
+        clearButton?.addEventListener('click', () => {
+          history.replaceState(history.state, '', window.location.pathname);
+        });
+      } catch (error) {
+        console.error('Failed to initialise Pagefind UI', error);
+        const details = error instanceof Error ? error.message : String(error ?? 'Unknown error');
+        container.innerHTML = `
+          <div class="search-error">
+            <p><strong>Search unavailable.</strong> Run <code>npm run build</code> to regenerate the Pagefind index, then restart the dev server.</p>
+            <p class="search-error__details">${details}</p>
+          </div>
+        `;
+      }
+    }
+
+    function initSearch() {
+      const container = document.querySelector(PAGEFIND_SELECTOR);
+      if (!container) return;
+
+      // Avoid re-initialisation when navigating with view transitions
+      if (container.dataset.initialised === 'true') return;
+      container.dataset.initialised = 'true';
+
+      const params = new URLSearchParams(window.location.search);
+
+      onIdle(() => {
+        loadPagefindUI(container, params);
+      });
+    }
+
+    document.addEventListener('astro:after-swap', () => {
+      const container = document.querySelector(PAGEFIND_SELECTOR);
+      if (container && container.querySelector('form')) return;
+      initSearch();
+    });
+
+    initSearch();
+  </script>
+</BaseLayout>

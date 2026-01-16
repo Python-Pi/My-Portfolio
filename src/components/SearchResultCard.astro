@@ -1,0 +1,67 @@
+---
+import BaseCard from './BaseCard.astro';
+import ForwardLink from './ForwardLink.astro';
+
+interface Props {
+  title: string;
+  href: string;
+  description?: string;
+  publishDate?: Date;
+  typeLabel: string;
+  tags?: string[];
+}
+
+const {
+  title,
+  href,
+  description,
+  publishDate,
+  typeLabel,
+  tags = [],
+} = Astro.props as Props;
+
+function formatDate(date: Date): string {
+  return new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }).format(date);
+}
+
+const meta = publishDate ? `${typeLabel} • ${formatDate(publishDate)}` : typeLabel;
+const summary = description?.trim() || 'No description available.';
+---
+
+<BaseCard href={href} class="search-result-card">
+  <Fragment slot="meta">{meta}</Fragment>
+  <Fragment slot="title">{title}</Fragment>
+  <Fragment slot="description">{summary}</Fragment>
+
+  {tags.length > 0 && (
+    <div slot="tags" class="tags-list">
+      {tags.map((tag) => (
+        <span class="tag">{tag}</span>
+      ))}
+    </div>
+  )}
+
+  <ForwardLink text="View details" />
+</BaseCard>
+
+<style>
+  .search-result-card :global(.tags-list) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .search-result-card :global(.tag) {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    border-radius: 999px;
+    background: var(--color-bg-tertiary, rgba(255, 255, 255, 0.04));
+  }
+</style>
