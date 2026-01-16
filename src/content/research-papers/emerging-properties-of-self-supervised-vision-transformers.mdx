@@ -7,16 +7,17 @@ authors:
   - Hugo Touvron
   - Ishan Misra
   - Hervé Jégou
-  - Julien Mairal
-  - Piotr Bojanowski
+  - and others
 tags:
-  - "Computer Science"
   - "Machine Learning"
   - "self-supervised-learning"
+  - "vision-transformers"
 link: "https://openaccess.thecvf.com/content/ICCV2021/papers/Caron_Emerging_Properties_in_Self-Supervised_Vision_Transformers_ICCV_2021_paper.pdf"
 draft: false
 status: "ongoing"
 ---
+
+import ScrollLink from '../../components/ScrollLink.astro';
 
 This paper is about exploring **self supervised learning in vision transformers (ViTs)**. The authors investigate how ViTs trained with self-supervised methods compare to standard methods like convolutional neural networks (CNNs) and supervised learning with ViTs. 
 The key findings of the paper include:
@@ -106,6 +107,49 @@ Given a fixed teacher network $$ g_t $$, the student network $$ g_s $$ is traine
 ```
 where $$ H(q, p) = - \sum_{y} q(y) \log p(y) $$ 
 
+In order to train both the student and teacher networks without any labels, we construct different distoretd views 
+of an image with multi-crop strategy. More precisely, we generate a set $$ \mathcal{V} $$  of different views which contain two 
+<ScrollLink target="key-concepts">global views</ScrollLink> and several other <ScrollLink target="key-concepts">local views</ScrollLink> for each image. 
+All the crops are passed through the student network whereas only the global crops are passed through the teacher network. The loss minimization function
+for this can be expressed as:
+
+```math
+\min_{s}
+\sum_{x \in \{x_1^g, x_2^g\}}
+\sum_{\substack{x' \in \mathcal{V} \\ x' \neq x}}
+H\!\left(P_t(x), P_s(x')\right)
+```
+where $$ x_1^g, x_2^g $$ are the two global crops of the image $$ x $$ and $$ \mathcal{V} $$ is the set of all views of the image.
+
+### Teacher Network Updating
+
+In contrast to traditional knowledge distillation where the teacher network is pre-trained and fixed, the teacher network in this cases 
+is dynamic and is updated based on the student network. The researchers found that directly copying the student weights to the 
+teacher fails to converge. They introduced a method called ** Exponential Moving Average (EMA)** to update the teacher network. 
+The update rule is given by:
+
+```math
+
+t \leftarrow \lambda \, t + (1 - \lambda) \, s
+```
+where $$ t $$ and $$ s $$ are the weights of the teacher and student networks respectively and $$ \lambda \in (0.99, 1) $$
+
+### Network architecture
+
+The neural network ($$g$$) is composed of a feature extractor ($$f$$) and a projection head ($$h$$):
+
+```math
+g(x) = h(f(x))
+```
+
+The feature extractor $$ f $$ is a Vision Transformer (ViT) and the projection head $$h$$ used in this paper is a 3-layer 
+Multi-Layer Perceptron (MLP) followed by $$l_2$$ normalization and a weight-normalized fully connected layer producing 
+$$K$$-dimensional outputs. A <ScrollLink target="key-concepts">predictor</ScrollLink> is not used in this work unlike other self-supervised learning methods.
+
+Of particular interest, we note that unlike standard convnets, ViT architectures do not use batch normalizations (BN) by default. Therefore,
+when applying DINO to ViT we do not use any BN also in the projection heads, making the system entirely *BN-free*.
+
+
 
 
 ## Conclusion
@@ -121,7 +165,7 @@ linear classifier nor data augmentation, achieving 78.3% top-1 accuracy on Image
 - Importance of using smaller patches (8x8/16x16) for self-supervised ViTs to learn better features.
 
 
-### Key Concepts
+## Key Concepts
 **Self Supervised Learning**: A type of machine learning where the model learns from the data itself without explicit labels.
 
 **Vision Transformers (ViTs)**: A type of neural network architecture that applies the transformer model, originally designed for natural language processing, to image data.
@@ -155,3 +199,19 @@ Consider the two distributions $$q(y)$$ and $$p(y)$$ . The cross-entropy loss is
 H(q, p) = - \sum_{y} q(y) \log p(y)
 ```
 A lower cross-entropy loss indicates that both the distributions are similar. Also, the negative sign is added because the log probabilities are negative.
+
+**Global Crop**: A large crop of the image that captures most of the content(60%-100%), used to provide context during training. 
+
+**Local Crop**: A smaller crop of the image that focuses on specific details(5%-50%), used to encourage the model to learn fine-grained features.
+
+$$\rightarrow$$ [Why Transformers Don't Use Batch Normalization](/mini-blogs/why-transformers-dont-use-batch-normalization)
+
+**Predicator**: In context of self-distillation, a predicator is often a small MLP placed after the projection head of the student network. 
+Predictors were introduced to prevent representation collapse (everything mapping to the same vector) without using negative samples. 
+
+
+> Student: $$f \rightarrow h \rightarrow $$ predicator
+
+> Teacher: $$f \rightarrow h$$
+
+DINO notably does not use a predicator on the student network yet avoids collapse through other techniques like centering and sharpening.

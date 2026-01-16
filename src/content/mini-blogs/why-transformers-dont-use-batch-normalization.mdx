@@ -1,0 +1,93 @@
+---
+title: "Why Transformers doesn't use Batch Normalization?"
+description: "A deep dive into the reasons behind the choice of Layer Normalization over Batch Normalization in Transformer architectures."
+publishDate: 2026-01-16
+tags:
+  - "Machine Learning"
+  - "Transformers"
+draft: false
+---
+
+import ScrollLink from '../../components/ScrollLink.astro';
+
+
+## Introduction
+
+We will explore what is normalization, the different types of normalization techniques, and why ViTs specifically use Layer Normalization
+and why not the more popular Batch Normalization.
+
+## What is Normalization?
+
+In plain words, during training, the weights of a neural network can become:
+- Very large
+- Very small
+- or unstable
+
+Normalization tries to keep these weights in a healthy range so that the training is stable and converges faster. A good analogy would be:
+
+> Keeping the volume of music at a comfortable level so you can hear everything clearly.
+
+
+## Types of Normalization
+
+Let's look mathematically at the two most popular normalization techniques: Batch Normalization and Layer Normalization. Consider the batch size 
+$$ B $$, the feature dimension $$ D $$. So, the <ScrollLink target="key-concepts"> activation </ScrollLink> looks like a matrix 
+```math
+X \in \mathbb{R}^{B \times D}
+```
+
+#### Batch Normalization
+For each feature dimension $$j$$, Batch Normalization computes the mean and variance across the batch dimension $$i$$:
+
+```math 
+\mu_j = \frac{1}{B} \sum_{i=1}^{B} X_{ij}
+```
+
+```math
+\sigma_j^2 = \frac{1}{B} \sum_{i=1}^{B} (X_{ij} - \mu_j)^2
+``` 
+
+Then, it normalizes using these statistics:
+
+```math
+\hat{X}_{ij} = \frac{X_{ij} - \mu_j}{\sqrt{\sigma_j^2 + \epsilon}}
+``` 
+
+#### Layer Normalization
+For each sample $$i$$, Layer Normalization computes the mean and variance across the feature dimension $$j$$:
+```math
+\mu_i = \frac{1}{D} \sum_{j=1}^{D} X_{ij}
+``` 
+
+```math
+\sigma_i^2 = \frac{1}{D} \sum_{j=1}^{D} (X_{ij} - \mu_i)^2
+``` 
+
+Then, it normalizes using these statistics:
+
+```math
+\hat{X}_{ij} = \frac{X_{ij} - \mu_i}{\sqrt{\sigma_i^2 + \epsilon}}
+``` 
+
+## How CNNs think vs How ViTs think?
+
+The reason Batch Normalization works well for CNNs but not for ViTs boils down to what each architecture focuses on:
+
+#### How CNNs think:
+Convolutional Neural Networks (CNNs) captures local patterns in the data. They look for features like edges, 
+textures, and shapes in small regions of the input image. All the local features in a batch are likely to be similar,
+so normalizing across the batch helps stabilize these local feature distributions.
+
+#### How ViTs think:
+
+A ViT first cuts the image into patches, converts each patch into a vector, and then processes these vectors using self-attention mechanisms. 
+They look for how different patches relate to each other globally across the image and also to compute the attention scores between patches.
+Different patches in a batch can have a very different distribution of features, so normalizing across the batch can introduce noise and instability.
+
+Since, self-attention compares patches within the same image, normalizing across the feature dimension (Layer Normalization) 
+helps maintain the relationships between patches better.
+
+
+## Key Concepts
+
+**Activation**: The output of a neuron after processing the input. Typically, the last step would be application of an activation function.

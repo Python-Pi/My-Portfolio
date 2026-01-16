@@ -1,0 +1,79 @@
+---
+interface Props {
+  target: string;
+  text?: string;
+  offset?: number;
+  ariaLabel?: string;
+  updateUrl?: boolean;
+  'class'?: string;
+}
+
+const {
+  target,
+  text,
+  offset = 20,
+  ariaLabel,
+  updateUrl = true,
+  class: classAttr
+} = Astro.props as Props;
+
+const href = target.startsWith('#') ? target : `#${target}`;
+const linkClasses = ['scroll-link'];
+if (classAttr) linkClasses.push(classAttr);
+const linkId = `scroll-link-${Math.random().toString(36).slice(2, 10)}`;
+---
+
+<a
+  href={href}
+  aria-label={ariaLabel}
+  class={linkClasses.join(' ')}
+  data-scroll-id={linkId}
+  data-scroll-offset={offset}
+  data-scroll-update-url={updateUrl ? 'true' : 'false'}
+>
+  {Astro.slots.default ? <slot /> : text ?? href.replace('#', '')}
+</a>
+<script>
+  function bindScrollLinks() {
+    const links = document.querySelectorAll('[data-scroll-id]');
+
+    links.forEach(linkNode => {
+      const link = linkNode as HTMLAnchorElement;
+      if (link.dataset.scrollBound === 'true') return;
+
+      const handleClick = (event: MouseEvent) => {
+        if (event.defaultPrevented) return;
+        if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        if (event.button !== 0) return;
+
+        const href = link.getAttribute('href');
+        if (!href || href === '#') return;
+        const targetSelector = href.startsWith('#') ? href : `#${href}`;
+        const targetElement = document.querySelector(targetSelector) as HTMLElement | null;
+        if (!targetElement) return;
+
+        event.preventDefault();
+
+        const header = document.querySelector('.site-header') as HTMLElement | null;
+        const headerHeight = header?.offsetHeight ?? 0;
+        const offsetValue = Number(link.dataset.scrollOffset ?? '0');
+        const top = targetElement.getBoundingClientRect().top + window.scrollY - headerHeight - offsetValue;
+
+        window.scrollTo({
+          top: Math.max(top, 0),
+          behavior: 'smooth'
+        });
+
+        if (link.dataset.scrollUpdateUrl !== 'false') {
+          history.pushState(null, '', targetSelector);
+        }
+      };
+
+      link.addEventListener('click', handleClick);
+      link.dataset.scrollBound = 'true';
+    });
+  }
+
+  bindScrollLinks();
+  document.addEventListener('astro:after-swap', bindScrollLinks);
+</script>

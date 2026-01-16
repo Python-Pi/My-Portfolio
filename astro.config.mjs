@@ -6,7 +6,7 @@ import icon from "astro-icon";
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 
-const SITE_URL = "http://tousif.in/"
+const SITE_URL = "http://www.tousif.in/"
 
 export default defineConfig({
   /**
