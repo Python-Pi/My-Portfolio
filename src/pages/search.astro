@@ -2,10 +2,9 @@
 import '@pagefind/default-ui/css/ui.css';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SEO from '../components/SEO.astro';
-import { siteConfig } from '../config';
 
-const pageTitle = `Search - ${siteConfig.title}`;
-const pageDescription = 'Search across blogs, mini blogs, research papers, and books.';
+const pageTitle = `Search`;
+const pageDescription = 'Search anything you want to...';
 const backUrl = Astro.url.pathname;
 ---
 
@@ -158,13 +157,15 @@ const backUrl = Astro.url.pathname;
       }
 
       window.__pagefindUILoader = (async () => {
-        try {
-          const module = await import('@pagefind/default-ui');
-          if (module?.PagefindUI) {
-            return module.PagefindUI;
+        if (isDev) {
+          try {
+            const module = await import('@pagefind/default-ui');
+            if (module?.PagefindUI) {
+              return module.PagefindUI;
+            }
+          } catch (primaryError) {
+            console.warn('Pagefind default UI import failed, attempting fallback bundle.', primaryError);
           }
-        } catch (primaryError) {
-          console.warn('Pagefind default UI import failed, attempting fallback bundle.', primaryError);
         }
 
         await loadScriptOnce(PAGEFIND_FALLBACK_SRC);
