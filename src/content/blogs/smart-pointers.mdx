@@ -1,0 +1,319 @@
+---
+title: "Everything useful about smart pointers"
+description: "Introduction and Implementation of smart pointers in C++"
+publishDate: 2026-01-18
+tags:
+  - "C++"
+draft: false
+featured: true
+status: "ongoing"
+---
+import ScrollLink from '../../components/ScrollLink.astro';
+
+## Why Smart Pointers exist?
+
+In C++, memory management is manual by default. It doesn't have a built-in garbage collector like some other languages (e.g., Java, Python). 
+This means that developers are responsible for allocating and deallocating memory using `new` and `delete`. 
+However, manual memory management can lead to several issues, such as memory leaks, dangling pointers, and double deletions. 
+Let's go through each of these issues briefly:
+
+1. **Memory Leaks**: This occurs when memory that is no longer needed is not released back to the system. Over time, memory leaks can accumulate and exhaust available memory.
+
+```cpp
+void memoryLeak() {
+    int* ptr = new int[100]; // Allocating memory
+    // ... some operations
+    // Forgot to delete the allocated memory
+}
+// Memory leak occurs here when moved out of scope without deleting ptr
+```
+
+2. **Dangling Pointers**: A dangling pointer is a pointer that points to a memory location that has already been freed. 
+Accessing or modifying data through a dangling pointer leads to undefined behavior.
+
+```cpp
+void* danglingPtr() {
+    int* ptr1 = new int(42);
+    delete ptr1; // Memory is freed
+    return ptr1; // Returning a dangling pointer
+}
+```
+
+3. **Double Deletions**: This occurs when the same memory is deleted more than once. This can lead to undefined behaviour in C++ or even crashes.
+
+```cpp
+void doubleDelete() {
+    int* ptr = new int(42);
+    delete ptr; // First deletion
+    delete ptr; // Second deletion - undefined behavior
+}
+```
+
+To address these issues, C++ introduced smart pointers in the C++11 standard.
+
+## What are Smart Pointers?
+Smart pointers as the name suggests are **smart** that automatically manage memory for you. They are template classes
+provided by the C++ Standard Library in the `<memory>` header. 
+Smart pointers ensure that memory is properly released when it is no longer needed such as when the smart pointer goes out of scope.
+There are three main types of smart pointers in C++:
+- `std::unique_ptr`
+- `std::shared_ptr`
+- `std::weak_ptr`
+
+### std::unique_ptr
+`std::unique_ptr` is a smart pointer that owns a dynamically allocated object exclusively. 
+This means that there can be only one `std::unique_ptr` pointing to a particular object at any given time. 
+When the `std::unique_ptr` goes out of scope, it automatically deletes the object it owns. Usage:
+
+```cpp
+int main() {
+    std::unique_ptr<int> ptr1(new int(42)); // Creating a unique_ptr
+    std::cout << *ptr1 << std::endl; // Accessing the value
+
+    // std::unique_ptr<int> ptr2 = ptr1; // Error: cannot copy unique_ptr
+
+    std::unique_ptr<int> ptr2 = std::move(ptr1); // Transfer ownership
+    if (!ptr1) {
+        std::cout << "ptr1 is now null after move." << std::endl;
+    }
+    std::cout << *ptr2 << std::endl; // Accessing the value through ptr2
+
+    return 0; // ptr2 goes out of scope and memory is automatically freed
+}
+```
+
+### std::shared_ptr
+`std::shared_ptr` is a smart pointer that allows multiple pointers to share ownership of a dynamically allocated object. 
+It maintains a reference count to keep track of how many `std::shared_ptr` instances point to the same object. 
+When the last `std::shared_ptr` pointing to an object is destroyed or reset, the object is automatically deleted. Usage:
+
+```cpp
+int main() {
+    std::shared_ptr<int> ptr1(new int(42)); // Creating a shared_ptr
+    {
+        std::shared_ptr<int> ptr2 = ptr1; // Sharing ownership
+        std::cout << "Reference count: " << ptr1.use_count() << std::endl; // Output: 2
+        std::cout << *ptr2 << std::endl; // Accessing the value
+    } // ptr2 goes out of scope here
+
+    std::cout << "Reference count after ptr2 goes out of scope: " << ptr1.use_count() << std::endl; // Output: 1
+    std::cout << *ptr1 << std::endl; // Accessing the value
+
+    return 0; // ptr1 goes out of scope and memory is automatically freed
+}
+```
+
+### std::weak_ptr
+`std::weak_ptr` is a smart pointer that provides a non-owning reference to an object managed by `std::shared_ptr`. 
+It is used to break <ScrollLink target="key-concepts">circular references</ScrollLink> that can occur with `std::shared_ptr`. 
+A `std::weak_ptr` does not affect the reference count of the object it points to. 
+To access the object, you need to convert the `std::weak_ptr` to a `std::shared_ptr` using the `std::weak_ptr::lock()` method (not related to mutexes and locks).
+This method returns a `std::shared_ptr` if the object is still alive, or a null pointer if the object has already been deleted. Usage:
+
+```cpp
+int main() {
+    std::shared_ptr<int> sharedPtr(new int(42)); // Creating a shared_ptr
+    std::weak_ptr<int> weakPtr = sharedPtr; // Creating a weak_ptr from shared_ptr
+    {
+        std::shared_ptr<int> lockedPtr = weakPtr.lock(); // Attempting to lock weak_ptr
+        if (lockedPtr) {
+            std::cout << "Locked value: " << *lockedPtr << std::endl; // Accessing the value
+        } else {
+            std::cout << "The object has been deleted." << std::endl;
+        }
+    } 
+    return 0;
+}
+```
+
+## Implementation Details
+
+### std::unique_ptr
+
+Thing that need to be implement:
+- Constructor 
+    - Default constructor
+    - Initializing using the pointer
+    - Remove copy constructor
+    - Move constructor
+- Destructor
+- Deference operators for * and ->
+- Assignment 
+    - Delete Copy Assignment
+    - Move Assignment
+- Functions like get, release, reset and swap
+- Add function bool
+
+
+```cpp
+template <typename T>
+class UniquePtr{
+    T* ptr;
+public:
+    UniquePtr() : ptr(nullptr) {}
+    UniquePtr(T* p) : ptr(p) {}
+    UniquePtr(const UniquePtr& other) = delete;
+    UniquePtr(UniquePtr&& other) : ptr(other.ptr){
+        other.ptr = nullptr;
+    }
+
+    ~UniquePtr(){
+        delete ptr;
+    }
+
+    T& operator*() {return *ptr;}
+    T* operator->() {return ptr;} 
+
+    UniquePtr& operator=(UniquePtr& other) = delete;
+    UniquePtr& operator=(UniquePtr&& other){
+        if(this == other) return *this;
+        delete ptr;
+        ptr = other.ptr;
+        other.ptr = nullptr;
+        return *this;
+    }
+
+    T* get() {return ptr;}
+    T* release() {
+        T* temp = ptr;
+        ptr = nullptr;
+        return temp;
+    }
+
+    void reset(T* p = nullptr) {
+        delete ptr;
+        ptr = p;
+    }
+
+     void swap(UniquePtr& other){
+        std::swap(ptr, other.ptr);
+    }
+
+    operator bool() {return ptr != nullptr;}
+};
+```
+
+### std::shared_ptr
+
+Things I need to implement:
+- Constructors 
+    - Default constructor
+    - Constructor with a pointer argument
+    - Copy constructor
+    - Move constructor
+- Destructor
+- Dereference operators * and ->
+- Assignment Opeators
+    - Copy Assignment
+    - Move Assignment 
+- Functions like get, use_count release, reset and swap
+- Add bool function
+
+```cpp
+template <typename T>
+class SharedPtr{
+    T* ptr;
+    int* ref_count;
+
+    void release_ref(){
+        if(!ref_count) return;
+        --(*ref_count);
+        if(*ref_count == 0){
+            delete ptr;
+            delete ref_count;
+        }
+        ptr = nullptr;
+        ref_count = nullptr;
+    }
+public:
+    SharedPtr() : ptr(nullptr), ref_count(nullptr) {}
+    SharedPtr(T* p) : ptr(p), ref_count(p ? new int(1) : nullptr) {}
+    SharedPtr(const SharedPtr& other) : ptr(other.ptr), ref_count(other.ref_count){
+        if(ref_count) ++(*ref_count);
+    }
+    SharedPtr(SharedPtr& other) : ptr(other.ptr), ref_count(other.ref_count){
+        other.ptr = nullptr;
+        other.ref_count = nullptr;
+    }
+
+    ~SharedPtr(){
+        release_ref();
+    }
+
+    T& operator*() {return *ptr;}
+    T* operator->() {return ptr;}
+
+    SharedPtr& operator=(const SharedPtr& other){
+        if(this == &other) return *this;
+
+        release_ref();
+        ptr = other.ptr;
+        ref_count = other.ref_count;
+        if(ref_count) ++(*ref_count);
+        return *this;
+    }
+
+    SharedPtr& operator=(SharedPtr& other){
+        if(this == &other) return *this;
+
+        release_ref();
+        ptr = other.ptr;
+        ref_count = other.ref_count;
+        other.ptr = nullptr;
+        other.ref_count = nullptr;
+        return *this;
+    }
+
+    T* get() {return ptr;}
+    int use_count() {return (ref_count) ? *ref_count : 0;}
+    void release() {release_ref();}
+
+    void reset(T* p = nullptr){
+        release_ref();
+        ptr = p;
+        ref_count = (p ? new int(1) : 0);
+    }
+
+    void swap(SharedPtr& other){
+        std::swap(ptr, other.ptr);
+        std::swap(ref_count, other.ref_count);
+    }
+
+    operator bool() {return (ptr != nullptr);}
+};
+
+```
+
+## Key Concepts
+
+**Circular References**: When two or more `std::shared_ptr` instances reference each other, they create a circular reference.
+This prevents the reference count from reaching zero, leading to memory leaks. `std::weak_ptr` helps to avoid this issue. Example:
+
+```cpp
+struct A,B;
+
+struct A { std::shared_ptr<B> b; };
+struct B { std::shared_ptr<A> a; };
+int main() {
+    std::shared_ptr<A> aPtr(new A());
+    std::shared_ptr<B> bPtr(new B());
+
+    aPtr->b = bPtr; // A owns B
+    bPtr->a = aPtr; // B owns A - circular reference
+
+    return 0; // Memory leak occurs here due to circular reference
+}
+```
+**What happens?**
+
+```cpp
+A ──shared_ptr──► B
+▲                 │
+└────shared_ptr───┘
+```
+
+
+
+
+
+

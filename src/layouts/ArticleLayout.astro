@@ -152,13 +152,13 @@ import BaseLayout from "./BaseLayout.astro";
 
     .article-layout :global(.article-content ul),
     .article-layout :global(.article-content ol) {
-      margin-bottom: var(--space-lg);
+      margin-bottom: var(--space-md);
       padding-left: var(--space-xl);
     }
 
     .article-layout :global(.article-content li) {
-      margin-bottom: var(--space-sm);
-      line-height: var(--line-height-relaxed);
+      margin-bottom: var(--space-xs);
+      line-height: var(--line-height-normal);
       color: var(--color-text-secondary);
     }
 
@@ -197,13 +197,14 @@ import BaseLayout from "./BaseLayout.astro";
       border: 1px solid var(--color-border);
       border-radius: var(--border-radius-md);
       overflow-x: auto;
+      line-height: 1.35;
     }
 
     .article-layout :global(.article-content pre code) {
       background: none;
       padding: 0;
       font-size: var(--font-size-sm);
-      line-height: var(--line-height-relaxed);
+      line-height: inherit;
     }
 
     .article-layout :global(.article-content a) {

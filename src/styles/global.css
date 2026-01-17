@@ -167,11 +167,13 @@ pre {
   padding: var(--space-md);
   border-radius: var(--border-radius-md);
   overflow-x: auto;
+  line-height: 1.35;
 }
 
 pre code {
   background-color: transparent;
   padding: 0;
+  line-height: inherit;
 }
 
 /* Utility Classes */

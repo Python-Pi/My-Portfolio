@@ -169,7 +169,7 @@ function formatDate(date: Date): string {
 
     .article-content {
       font-size: 1.0625rem;
-      line-height: 1.8;
+      line-height: 1.65;
       color: var(--color-text-secondary);
     }
 
@@ -196,12 +196,13 @@ function formatDate(date: Date): string {
 
     .article-content :global(ul),
     .article-content :global(ol) {
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.1rem;
       padding-left: 1.5rem;
     }
 
     .article-content :global(li) {
-      margin-bottom: 0.75rem;
+      margin-bottom: 0.4rem;
+      line-height: 1.45;
     }
 
     .article-content :global(code) {
@@ -217,11 +218,13 @@ function formatDate(date: Date): string {
       background: var(--color-bg-secondary);
       border-radius: 8px;
       overflow-x: auto;
+      line-height: 1.35;
     }
 
     .article-content :global(pre code) {
       background: transparent;
       padding: 0;
+      line-height: inherit;
     }
 
     .article-content :global(blockquote) {

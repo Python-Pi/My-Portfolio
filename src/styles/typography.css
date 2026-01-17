@@ -104,6 +104,11 @@ li:last-child {
   margin-bottom: 0;
 }
 
+.prose li {
+  margin-bottom: var(--space-xs);
+  line-height: var(--line-height-normal);
+}
+
 /* Nested Lists */
 ul ul,
 ol ol,
