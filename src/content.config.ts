@@ -23,8 +23,8 @@ const blogCollection = defineCollection({
   }),
 });
 
-const researchPapersCollection = defineCollection({
-  loader: glob({ pattern: '**/*.mdx', base: './src/content/research-papers' }),
+const literatureReviewCollection = defineCollection({
+  loader: glob({ pattern: '**/*.mdx', base: './src/content/literature-review' }),
   schema: z.object({
     title: z.string(),
     description: z.string(),
@@ -143,7 +143,7 @@ const speakingCollection = defineCollection({
  */
 export const collections = {
   blogs: blogCollection,
-  'research-papers': researchPapersCollection,
+  'literature-review': literatureReviewCollection,
   books: booksCollection,
   'mini-blogs': miniBlogCollection,
   journey: journeyCollection,

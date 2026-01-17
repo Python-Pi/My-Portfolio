@@ -11,7 +11,7 @@ import type { GetStaticPaths } from 'astro';
 export const getStaticPaths: GetStaticPaths = async () => {
   const papersPerPage = 5;
 
-  const allPapers = await getCollection('research-papers', ({ data }) => data.draft === false);
+  const allPapers = await getCollection('literature-review', ({ data }) => data.draft === false);
 
   const sortedPapers = allPapers.sort((a, b) => {
     return b.data.publishDate.getTime() - a.data.publishDate.getTime();
@@ -37,7 +37,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
 };
 
 interface Props {
-  papers: Awaited<ReturnType<typeof getCollection<'research-papers'>>>;
+  papers: Awaited<ReturnType<typeof getCollection<'literature-review'>>>;
   currentPage: number;
   totalPages: number;
   totalPapers: number;
@@ -47,28 +47,28 @@ const { papers, currentPage, totalPages, totalPapers } = Astro.props;
 const papersPerPage = 5;
 
 const pageTitle = currentPage === 1
-  ? pagesConfig.researchPapers.title
-  : `${pagesConfig.researchPapers.title} - Page ${currentPage}`;
+  ? pagesConfig.literatureReview.title
+  : `${pagesConfig.literatureReview.title} - Page ${currentPage}`;
 ---
 
 <BaseLayout>
   <SEO
     slot="head"
     title={pageTitle}
-    description={pagesConfig.researchPapers.description}
+    description={pagesConfig.literatureReview.description}
     type="website"
   />
 
   <main class="page-container">
     <header class="page-header">
-      <h1 class="page-title">{pagesConfig.researchPapers.heading}</h1>
+      <h1 class="page-title">{pagesConfig.literatureReview.heading}</h1>
       <p class="page-intro">
-        {pagesConfig.researchPapers.intro}
+        {pagesConfig.literatureReview.intro}
       </p>
       <PageStats
         text={totalPages > 1
-          ? `Showing ${(currentPage - 1) * papersPerPage + 1}–${Math.min(currentPage * papersPerPage, totalPapers)} of ${totalPapers} papers`
-          : `${totalPapers} papers`
+          ? `Showing ${(currentPage - 1) * papersPerPage + 1}–${Math.min(currentPage * papersPerPage, totalPapers)} of ${totalPapers} reviews`
+          : `${totalPapers} reviews`
         }
       />
     </header>
@@ -82,20 +82,20 @@ const pageTitle = currentPage === 1
             description={paper.data.description}
             publishDate={paper.data.publishDate}
             tags={paper.data.tags}
-            basePath="/research-papers"
+            basePath="/literature-review"
             featured={paper.data.featured}
             status={paper.data.status}
           />
         ))}
       </div>
     ) : (
-      <p class="empty-state">No research papers published yet.</p>
+      <p class="empty-state">No literature reviews published yet.</p>
     )}
 
     <Pagination
       currentPage={currentPage}
       totalPages={totalPages}
-      baseUrl="/research-papers"
+      baseUrl="/literature-review"
     />
   </main>
 </BaseLayout>

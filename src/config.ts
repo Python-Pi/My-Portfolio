@@ -67,9 +67,9 @@ export const siteConfig = {
    * Add or remove items to customize navigation.
    */
   nav: [
+    { label: 'Literature Review', href: '/literature-review' },
     { label: 'Blogs', href: '/blogs' },
     { label: 'Mini Blogs', href: '/mini-blogs' },
-    { label: 'Research Papers', href: '/research-papers' },
     { label: 'Books', href: '/books' },
     
     // { label: 'Journey', href: '/journey' },

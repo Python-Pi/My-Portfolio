@@ -10,14 +10,14 @@ import { getCollection, getEntry, render } from 'astro:content';
 import { getReadingTime } from '../../utils/readingTime';
 
 export async function getStaticPaths() {
-  const papers = await getCollection('research-papers', ({ data }) => data.draft === false);
+  const papers = await getCollection('literature-review', ({ data }) => data.draft === false);
   return papers.map((paper) => ({
     params: { slug: paper.id },
   }));
 }
 
 const { slug } = Astro.params;
-const paper = await getEntry('research-papers', slug!);
+const paper = await getEntry('literature-review', slug!);
 
 if (!paper) {
   return Astro.redirect('/404');
@@ -50,7 +50,7 @@ function formatDate(date: Date): string {
 <BaseLayout>
   <SEO
     slot="head"
-    title={`${title} - Research Papers`}
+    title={`${title} - Literature Review`}
     description={description}
     type="article"
     publishDate={publishDate}
@@ -128,7 +128,7 @@ function formatDate(date: Date): string {
 
     <ShareButtons title={title} description={description} url={Astro.url.href} />
 
-    <BackLink href="/research-papers" text="All research papers" />
+  <BackLink href="/literature-review" text="All literature reviews" />
   </main>
 
   <ScrollToTop />

@@ -29,19 +29,19 @@ export const pagesConfig = {
    */
   blogs: {
     title: 'Blogs',
-    description: 'Latest blog posts covering software development, machine learning, and practical lessons from the field.',
+    description: 'An ongoing log of what I’m learning, building, and thinking',
     heading: 'Blogs',
     intro: 'An ongoing log of what I’m learning, building, and thinking',
   },
 
   /**
-   * Research papers listing page (/research-papers)
+   * Literature review listing page (/literature-review)
    */
-  researchPapers: {
-    title: 'Research Papers',
-    description: 'Summaries and notes from academic papers I\'m studying, with key takeaways for practitioners.',
-    heading: 'Research Papers',
-    intro: 'Paper breakdowns and insights from the research I read.',
+  literatureReview: {
+    title: 'Literature Review',
+    description: 'Extended notes and takeaways from the research literature I\'m learning and exploring',
+    heading: 'Literature Review',
+    intro: 'Extended notes and takeaways from the research literature I\'m learning and exploring.',
   },
 
   /**
@@ -49,7 +49,7 @@ export const pagesConfig = {
    */
   books: {
     title: 'Books',
-    description: 'Highlights, summaries, and reflections from the books I\'ve read and am currently exploring.',
+    description: 'Reading notes and lessons from the titles shaping my thinking',
     heading: 'Books',
     intro: 'Reading notes and lessons from the titles shaping my thinking.',
   },
@@ -59,7 +59,7 @@ export const pagesConfig = {
    */
   miniBlogs: {
     title: 'Mini Blogs',
-    description: 'Short-form notes and quick takeaways that capture learnings before they become full blogs.',
+    description: 'Bite-sized updates that don\'t need a full article',
     heading: 'Mini Blogs',
     intro: 'Bite-sized updates that don\'t need a full article.',
   },
