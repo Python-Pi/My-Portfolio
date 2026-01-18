@@ -13,9 +13,12 @@
   "author": "Tousif <tousfchinnu@gmail.com>",
   "homepage": "https://tousif.in",
   "scripts": {
+    "predev": "npm run encrypt:notes",
     "dev": "astro dev",
     "start": "astro dev",
+    "prebuild": "npm run encrypt:notes",
     "build": "astro check && astro build && pagefind --site dist && node ./scripts/sync-pagefind.mjs",
+    "encrypt:notes": "node ./scripts/encrypt-private-notes.mjs",
     "preview": "astro preview",
     "astro": "astro"
   },

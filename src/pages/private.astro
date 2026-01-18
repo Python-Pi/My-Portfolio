@@ -1,0 +1,234 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+<BaseLayout title="Private Notes">
+  <section class="private-page">
+    <div class="page-header">
+      <h1>Private Notes</h1>
+      <p>Trying out to have a private page in a frontend-only platform. Quite risky!</p>
+    </div>
+    <div class="layout">
+      <div class="card">
+        <form id="unlock-form" class="unlock-form">
+          <label for="password">Password</label>
+          <div class="input-row">
+            <input id="password" type="password" placeholder="Enter your password" autocomplete="off" required />
+            <button type="submit">Unlock</button>
+          </div>
+          <p class="hint">Use the same password you supplied. (Hint: It's an environment variable)</p>
+        </form>
+        <div class="status" data-status-wrapper hidden aria-live="polite">
+          <span class="status-indicator" aria-hidden="true"></span>
+          <span data-status></span>
+        </div>
+      </div>
+      <article class="notes prose" data-notes hidden aria-live="polite" tabindex="-1"></article>
+    </div>
+  </section>
+  <script type="module" is:inline>
+    const statusWrapper = document.querySelector("[data-status-wrapper]");
+    const statusEl = document.querySelector("[data-status]");
+    const notesEl = document.querySelector("[data-notes]");
+    const form = document.getElementById("unlock-form");
+
+    let markdownRendererPromise;
+
+    const getMarkdownRenderer = async () => {
+      if (!markdownRendererPromise) {
+        markdownRendererPromise = import("https://cdn.jsdelivr.net/npm/marked@12.0.2/+esm").then((mod) => {
+          const { marked } = mod;
+          marked.setOptions({ breaks: true, gfm: true });
+          return marked;
+        });
+      }
+      return markdownRendererPromise;
+    };
+
+    const renderMarkdown = async (markdown) => {
+      const marked = await getMarkdownRenderer();
+      return marked.parse(markdown ?? "");
+    };
+
+    const escapeHtml = (value = "") =>
+      String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+
+    const setStatus = (message, variant = "info") => {
+      if (!statusWrapper || !statusEl) return;
+      const variants = ["info", "success", "warning", "error"];
+      variants.forEach((name) => statusWrapper.classList.remove(`status--${name}`));
+      if (!message) {
+        statusWrapper.hidden = true;
+        statusEl.textContent = "";
+        return;
+      }
+      statusWrapper.hidden = false;
+      statusWrapper.classList.add(`status--${variants.includes(variant) ? variant : "info"}`);
+      statusEl.textContent = message;
+    };
+
+    const b64ToArrayBuffer = (b64) => {
+      const bin = atob(b64);
+      const len = bin.length;
+      const buf = new Uint8Array(len);
+      for (let i = 0; i < len; i++) buf[i] = bin.charCodeAt(i);
+      return buf.buffer;
+    };
+
+    const arrayBufferToUtf8 = (buf) => new TextDecoder().decode(buf);
+
+    const deriveKey = async (password, salt, iterations) => {
+      const enc = new TextEncoder();
+      const baseKey = await crypto.subtle.importKey(
+        "raw",
+        enc.encode(password),
+        { name: "PBKDF2" },
+        false,
+        ["deriveKey"]
+      );
+      return crypto.subtle.deriveKey(
+        {
+          name: "PBKDF2",
+          salt,
+          iterations,
+          hash: "SHA-256",
+        },
+        baseKey,
+        { name: "AES-GCM", length: 256 },
+        false,
+        ["decrypt"]
+      );
+    };
+
+    const decryptNotes = async (password) => {
+      setStatus("Fetching encrypted notes...", "info");
+      let meta;
+      try {
+        const res = await fetch("/private-notes.json", { cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        meta = await res.json();
+      } catch (e) {
+        setStatus("No encrypted notes found. Generate them first.", "warning");
+        return;
+      }
+
+      if (!meta || !meta.ciphertext || !meta.iv || !meta.salt || !meta.tag) {
+        setStatus("Encrypted data is missing or incomplete.", "warning");
+        return;
+      }
+
+      try {
+        const salt = b64ToArrayBuffer(meta.salt);
+        const iv = b64ToArrayBuffer(meta.iv);
+        const ct = new Uint8Array(b64ToArrayBuffer(meta.ciphertext));
+        const tag = new Uint8Array(b64ToArrayBuffer(meta.tag));
+        const combined = new Uint8Array(ct.length + tag.length);
+        combined.set(ct, 0);
+        combined.set(tag, ct.length);
+
+        const key = await deriveKey(password, salt, meta.iterations || 200000);
+        setStatus("Decrypting...", "info");
+        const plaintext = await crypto.subtle.decrypt(
+          { name: "AES-GCM", iv },
+          key,
+          combined
+        );
+        const text = arrayBufferToUtf8(plaintext);
+        let html;
+        try {
+          html = await renderMarkdown(text);
+        } catch (renderErr) {
+          console.warn("Markdown rendering failed, falling back to preformatted text.", renderErr);
+          html = `<pre>${escapeHtml(text)}</pre>`;
+        }
+        notesEl.innerHTML = html;
+        notesEl.hidden = false;
+        requestAnimationFrame(() => {
+          if (typeof notesEl.focus === "function") {
+            try {
+              notesEl.focus({ preventScroll: true });
+            } catch {
+              notesEl.focus();
+            }
+          }
+          notesEl.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+        setStatus("Notes unlocked.", "success");
+      } catch (e) {
+        setStatus("Incorrect password or corrupted data.", "error");
+      }
+    };
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      notesEl.hidden = true;
+      notesEl.innerHTML = "";
+      const password = document.getElementById("password").value;
+      if (!password) {
+        setStatus("Please enter a password.", "warning");
+        return;
+      }
+      setStatus("Unlocking...", "info");
+      await decryptNotes(password);
+    });
+  </script>
+  <style>
+    :global(:root) {
+      --private-card-bg: var(--color-bg-elevated);
+      --private-card-border: var(--color-border);
+      --private-card-shadow: var(--shadow-lg);
+      --private-info-color: #60a5fa;
+      --private-success-color: #34d399;
+      --private-warning-color: #facc15;
+      --private-error-color: #f87171;
+    }
+    :global([data-theme="light"]) {
+      --private-card-shadow: var(--shadow-md);
+      --private-info-color: #2563eb;
+      --private-success-color: #16a34a;
+      --private-warning-color: #d97706;
+      --private-error-color: #dc2626;
+    }
+    .private-page { max-width: 720px; margin: 3rem auto 4rem; padding: 0 1.5rem; display: flex; flex-direction: column; gap: 2rem; }
+    .page-header { text-align: center; }
+    .page-header h1 { margin-bottom: 0.5rem; }
+    .page-header p { margin: 0; color: var(--color-text-secondary); }
+    .layout { display: flex; flex-direction: column; gap: 2rem; }
+    .card { background: var(--private-card-bg); border: 1px solid var(--private-card-border); border-radius: 16px; padding: 1.75rem; box-shadow: var(--private-card-shadow); }
+    .unlock-form { display: flex; flex-direction: column; gap: 0.75rem; }
+    .unlock-form label { font-weight: 600; color: var(--color-text); }
+    .input-row { display: flex; gap: 0.75rem; }
+    .input-row input { flex: 1; padding: 0.65rem 0.85rem; border: 1px solid var(--color-border); border-radius: 10px; font-size: 1rem; transition: border-color var(--transition-base), box-shadow var(--transition-base); background: var(--color-bg); color: var(--color-text); }
+    .input-row input::placeholder { color: var(--color-text-muted); }
+    .input-row input:focus { border-color: var(--color-accent); box-shadow: 0 0 0 3px var(--color-accent-muted); outline: none; }
+    .input-row button { padding: 0.65rem 1.25rem; border-radius: 10px; border: none; background: var(--color-accent); color: #ffffff; font-weight: 600; cursor: pointer; transition: background var(--transition-base), transform var(--transition-base); }
+    .input-row button:hover { background: var(--color-accent-hover); transform: translateY(-1px); }
+    .input-row button:focus-visible { outline: 2px solid var(--color-accent-hover); outline-offset: 2px; }
+    .hint { margin: 0; font-size: 0.875rem; color: var(--color-text-secondary); }
+    .status { --status-color: var(--color-text-secondary); display: flex; align-items: center; gap: 0.65rem; padding: 0.75rem 1rem; margin-top: 1rem; border-radius: 10px; font-size: 0.95rem; border: 1px solid var(--color-border); background: var(--color-bg-secondary); color: var(--color-text); transition: background var(--transition-base), border-color var(--transition-base); }
+    .status-indicator { width: 0.75rem; height: 0.75rem; border-radius: 50%; background: var(--status-color); opacity: 0.9; }
+    .status--info { --status-color: var(--private-info-color); }
+    .status--success { --status-color: var(--private-success-color); }
+    .status--warning { --status-color: var(--private-warning-color); }
+    .status--error { --status-color: var(--private-error-color); }
+    .notes { max-width: var(--max-width-prose); margin: 3rem auto 0; width: 100%; color: var(--color-text); }
+    .notes:focus { outline: none; }
+    .notes > *:first-child { margin-top: 0; }
+    @media (max-width: 720px) {
+      .private-page { margin: 2.5rem auto 3.5rem; }
+      .card { padding: 1.5rem; }
+      .input-row { flex-direction: column; }
+      .input-row button { width: 100%; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .input-row button,
+      .input-row input {
+        transition: none;
+      }
+    }
+  </style>
+</BaseLayout>

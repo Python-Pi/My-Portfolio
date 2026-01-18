@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "algo": "AES-GCM",
+  "kdf": "PBKDF2",
+  "iterations": 200000,
+  "salt": "QO53AmjNvgI1SekXq+Knaw==",
+  "iv": "w9IRM75nyOffVwQL",
+  "ciphertext": "Q9/PoPrft4rqZ3kO3+io1d5ZzSZT4NS1oaYRl49fkonzBN37obuN3pE+6VXwpDBks0R5vK0Cg6VR9VPduaqgWtaqp/6wsX2ZJ+e/76xK/Ok80ZUaKwPx46uHd+oVnrbCnP0hFzkrv63sQMSkaIe4giZFxTiGsQjEEYFJ2bci6FORfb6cBu4XbutkdHJiG2lUiUyuYmfFhU+HIggnqcSy01rsyYAs7H0MSCRtc8RQuxiu2tgsJmWucJBUZo10Tqb8VkrXMaAUUes0ygnEVMXoHjBxiIM8mXrUDz0vBFmYf88ZQS19ergQExaUdQcnjUMHOsQOKfJfonCf3nGQfC6SHGWQ63H9/eLBlluKEuXvX8gM9S5aV4CmfrlDsBaUBBxBub0oq89oJl5vEFpcqmjkqRDJaeYCRUG/Yzfd2b9/ekz7BspNYHIt",
+  "tag": "DEM2pFHaR/9tdPNK7emh3w==",
+  "mime": "text/plain"
+}
