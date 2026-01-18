@@ -13,7 +13,8 @@
   },
   "exclude": [
     "public/pagefind",
-    "dist"
+    "dist",
+    "src/pages/notes.astro"
   ],
   "include": [
     "src",

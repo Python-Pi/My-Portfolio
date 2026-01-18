@@ -71,6 +71,7 @@ export const siteConfig = {
     { label: 'Blogs', href: '/blogs' },
     { label: 'Mini Blogs', href: '/mini-blogs' },
     { label: 'Books', href: '/books' },
+    { label: 'Notes', href: '/notes' },
     
     // { label: 'Journey', href: '/journey' },
     // { label: 'Speaking', href: '/speaking' },

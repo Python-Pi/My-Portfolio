@@ -64,6 +64,16 @@ export const pagesConfig = {
     intro: 'Bite-sized updates that don\'t need a full article.',
   },
 
+  /**
+   * Notes section page (/notes)
+   */
+  notes: {
+    title: 'Notes',
+    description: 'Curated folders that group related blogs and mini blogs for quick reference.',
+    heading: 'Notes',
+    intro: 'Related blogs and mini blogs for quick reference.',
+  },
+
   /** ===========================STILL IN DEVELOPMENT============================================= */
   
   journey: {

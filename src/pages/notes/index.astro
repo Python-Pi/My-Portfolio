@@ -1,0 +1,236 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SEO from '../../components/SEO.astro';
+import PageStats from '../../components/PageStats.astro';
+import { pagesConfig } from '../../pages.config';
+import { notesIndex } from '../../data/notes-index';
+import type { NotesEntryCollection, NotesEntry, NotesFolder } from '../../data/notes-index';
+import { getEntry } from 'astro:content';
+
+const config = pagesConfig.notes;
+const MAX_ENTRIES_PER_FOLDER = 3;
+
+type NotesEntryWithContent = NotesEntry & {
+  resolvedTitle: string;
+  resolvedDescription?: string;
+};
+type NotesFolderWithContent = NotesFolder & { entries: NotesEntryWithContent[] };
+
+const foldersWithDescriptions = (await Promise.all(
+  notesIndex.map(async (folder) => ({
+    ...folder,
+    entries: await Promise.all(
+      folder.entries.map(async (entry) => {
+        const contentEntry = await getEntry(entry.collection, entry.slug);
+        const slugSegment = entry.slug.split('/').pop() ?? entry.slug;
+        const fallbackTitle = slugSegment
+          .replace(/-/g, ' ')
+          .replace(/\b\w/g, (char) => char.toUpperCase());
+        const resolvedTitle = contentEntry?.data.title ?? fallbackTitle;
+        return {
+          ...entry,
+          resolvedTitle,
+          resolvedDescription: contentEntry?.data.description ?? entry.summary ?? '',
+        } satisfies NotesEntryWithContent;
+      })
+    ),
+  }))
+)) as NotesFolderWithContent[];
+
+const typedFolders = foldersWithDescriptions as NotesFolderWithContent[];
+
+const totalEntries = foldersWithDescriptions.reduce((count, folder) => count + folder.entries.length, 0);
+
+const collectionLabel = (collection: NotesEntryCollection) => (collection === 'blogs' ? 'Blog' : 'Mini Blog');
+const entryHref = (collection: NotesEntryCollection, slug: string) => `${collection === 'blogs' ? '/blogs' : '/mini-blogs'}/${slug}`;
+---
+
+<BaseLayout>
+  <SEO 
+    slot="head"
+    title={config.title}
+    description={config.description}
+    type="website"
+  />
+
+  <main class="notes-page">
+    <header class="page-header">
+      <h1 class="page-title">{config.heading}</h1>
+      {config.intro && <p class="page-intro">{config.intro}</p>}
+      <PageStats text={`${typedFolders.length} folder${typedFolders.length === 1 ? '' : 's'} · ${totalEntries} ${totalEntries === 1 ? 'entry' : 'entries'}`} />
+    </header>
+
+    {typedFolders.length > 0 ? (
+      <div class="folders-grid">
+        {typedFolders.map((folder) => (
+          <section id={folder.id} class="folder-card">
+            <header class="folder-header">
+              <h2>{folder.title}</h2>
+              {folder.description && <p>{folder.description}</p>}
+            </header>
+            <ul class="entry-list">
+              {folder.entries.slice(0, MAX_ENTRIES_PER_FOLDER).map((entry) => {
+                const enrichedEntry = entry as NotesEntryWithContent;
+                return (
+                  <li class="entry-item">
+                    <div class="entry-text">
+                      <a class="entry-link" href={entryHref(enrichedEntry.collection, enrichedEntry.slug)}>
+                        {enrichedEntry.resolvedTitle}
+                      </a>
+                      {enrichedEntry.resolvedDescription && (
+                        <p class="entry-summary">{enrichedEntry.resolvedDescription}</p>
+                      )}
+                    </div>
+                    <span class="entry-badge">{collectionLabel(enrichedEntry.collection)}</span>
+                  </li>
+                );
+              })}
+            </ul>
+            {folder.entries.length > MAX_ENTRIES_PER_FOLDER && (
+              <a class="view-all-link" href={`/notes/${folder.id}`}>
+                View all {folder.entries.length} entries
+              </a>
+            )}
+          </section>
+        ))}
+      </div>
+    ) : (
+      <p class="empty-state">No notes folders yet.</p>
+    )}
+  </main>
+
+  <style>
+    .notes-page {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 8rem;
+    }
+
+    .page-header {
+      margin-bottom: 3rem;
+    }
+
+    .page-title {
+      font-size: clamp(2rem, 6vw, 2.75rem);
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+    }
+
+    .page-intro {
+      max-width: 640px;
+      font-size: 1.05rem;
+      line-height: 1.7;
+      color: var(--color-text-muted);
+      margin-bottom: 1.5rem;
+    }
+
+    .folders-grid {
+      display: grid;
+      gap: 1.75rem;
+    }
+
+    .folder-card {
+      padding: 1.75rem;
+      border: 1px solid var(--color-border);
+      border-radius: 1rem;
+      background: var(--color-surface);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .folder-header h2 {
+      font-size: 1.25rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .folder-header p {
+      color: var(--color-text-muted);
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    .entry-list {
+      list-style: none;
+      padding: 0;
+      margin: 1.5rem 0 0;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .entry-item {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .entry-text {
+      flex: 1;
+    }
+
+    .entry-link {
+      font-weight: 600;
+      text-decoration: none;
+      color: var(--color-text);
+      transition: color 0.2s ease;
+    }
+
+    .entry-link:hover {
+      color: var(--color-text-secondary);
+    }
+
+    .entry-badge {
+      flex-shrink: 0;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.3rem 0.6rem;
+      border-radius: 999px;
+      background: var(--color-surface-elevated);
+      border: 1px solid var(--color-border);
+      color: var(--color-text-muted);
+    }
+
+    .view-all-link {
+      display: inline-flex;
+      align-items: center;
+      margin-top: 1.25rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--color-text-secondary);
+      text-decoration: none;
+    }
+
+    .view-all-link:hover {
+      color: var(--color-text);
+    }
+
+    .empty-state {
+      padding: 2rem;
+      text-align: center;
+      color: var(--color-text-muted);
+      border: 1px dashed var(--color-border);
+      border-radius: 1rem;
+    }
+
+    @media (max-width: 720px) {
+      .notes-page {
+        padding: 2.5rem 1rem 6rem;
+      }
+
+      .folder-card {
+        padding: 1.5rem;
+      }
+
+      .entry-item {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .entry-badge {
+        margin-top: 0.35rem;
+      }
+    }
+  </style>
+</BaseLayout>

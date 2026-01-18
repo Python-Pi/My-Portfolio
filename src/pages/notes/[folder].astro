@@ -1,0 +1,207 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SEO from '../../components/SEO.astro';
+import PageStats from '../../components/PageStats.astro';
+import { pagesConfig } from '../../pages.config';
+import { notesIndex } from '../../data/notes-index';
+import type { NotesFolder, NotesEntryCollection, NotesEntry } from '../../data/notes-index';
+import { getEntry } from 'astro:content';
+
+export const prerender = true;
+
+type NotesEntryWithContent = NotesEntry & {
+  resolvedTitle: string;
+  resolvedDescription?: string;
+};
+type NotesFolderWithContent = NotesFolder & { entries: NotesEntryWithContent[] };
+
+export async function getStaticPaths() {
+  return Promise.all(
+    notesIndex.map(async (folder) => ({
+      params: { folder: folder.id },
+      props: {
+        folder: {
+          ...folder,
+          entries: await Promise.all(
+            folder.entries.map(async (entry) => {
+              const contentEntry = await getEntry(entry.collection, entry.slug);
+              const slugSegment = entry.slug.split('/').pop() ?? entry.slug;
+              const fallbackTitle = slugSegment
+                .replace(/-/g, ' ')
+                .replace(/\b\w/g, (char) => char.toUpperCase());
+              const resolvedTitle = contentEntry?.data.title ?? fallbackTitle;
+              return {
+                ...entry,
+                resolvedTitle,
+                resolvedDescription: contentEntry?.data.description ?? entry.summary ?? '',
+              } satisfies NotesEntryWithContent;
+            })
+          ),
+        } satisfies NotesFolderWithContent,
+      },
+    }))
+  );
+}
+
+const { folder } = Astro.props as { folder: NotesFolderWithContent };
+const config = pagesConfig.notes;
+const pageTitle = `${folder.title} · ${config.title}`;
+const pageDescription = folder.description ?? `All saved entries for ${folder.title}.`;
+
+const collectionLabel = (collection: NotesEntryCollection) => (collection === 'blogs' ? 'Blog' : 'Mini Blog');
+const entryHref = (collection: NotesEntryCollection, slug: string) => `${collection === 'blogs' ? '/blogs' : '/mini-blogs'}/${slug}`;
+---
+
+<BaseLayout>
+  <SEO
+    slot="head"
+    title={pageTitle}
+    description={pageDescription}
+    type="website"
+  />
+
+  <main class="folder-page">
+    <header class="folder-header">
+      <a class="back-link" href="/notes">← Back to notes</a>
+      <h1>{folder.title}</h1>
+      {folder.description && <p class="folder-description">{folder.description}</p>}
+      <PageStats text={`${folder.entries.length} ${folder.entries.length === 1 ? 'entry' : 'entries'}`} />
+    </header>
+
+    <section class="entries-section">
+      <ul class="entry-list">
+        {folder.entries.map((entry) => {
+          const enrichedEntry = entry as NotesEntryWithContent;
+          return (
+            <li class="entry-item">
+              <div class="entry-text">
+                <a class="entry-link" href={entryHref(enrichedEntry.collection, enrichedEntry.slug)}>
+                  {enrichedEntry.resolvedTitle}
+                </a>
+                {enrichedEntry.resolvedDescription && (
+                  <p class="entry-summary">{enrichedEntry.resolvedDescription}</p>
+                )}
+              </div>
+              <span class="entry-badge">{collectionLabel(enrichedEntry.collection)}</span>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  </main>
+
+  <style>
+    .folder-page {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 6rem;
+    }
+
+    .folder-header {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .back-link {
+      font-size: 0.9rem;
+      text-decoration: none;
+      color: var(--color-text-muted);
+    }
+
+    .back-link:hover {
+      color: var(--color-text-secondary);
+    }
+
+    .folder-header h1 {
+      font-size: clamp(2rem, 5vw, 2.5rem);
+      margin: 0;
+    }
+
+    .folder-description {
+      margin: 0;
+      font-size: 1.05rem;
+      line-height: 1.7;
+      color: var(--color-text-muted);
+    }
+
+    .entries-section {
+      border: 1px solid var(--color-border);
+      border-radius: 1rem;
+      background: var(--color-surface);
+      box-shadow: var(--shadow-sm);
+      padding: 2rem;
+    }
+
+    .entry-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .entry-item {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .entry-text {
+      flex: 1;
+    }
+
+    .entry-link {
+      font-weight: 600;
+      text-decoration: none;
+      color: var(--color-text);
+      transition: color 0.2s ease;
+    }
+
+    .entry-link:hover {
+      color: var(--color-text-secondary);
+    }
+
+    .entry-summary {
+      margin: 0.35rem 0 0;
+      color: var(--color-text-muted);
+      line-height: 1.6;
+      font-size: 0.95rem;
+    }
+
+    .entry-badge {
+      flex-shrink: 0;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.3rem 0.6rem;
+      border-radius: 999px;
+      background: var(--color-surface-elevated);
+      border: 1px solid var(--color-border);
+      color: var(--color-text-muted);
+    }
+
+    @media (max-width: 720px) {
+      .folder-page {
+        padding: 2.5rem 1rem 5rem;
+      }
+
+      .entries-section {
+        padding: 1.5rem;
+      }
+
+      .entry-item {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .entry-badge {
+        margin-top: 0.35rem;
+      }
+    }
+  </style>
+</BaseLayout>
