@@ -1,0 +1,575 @@
+---
+title: "Prefix Sum - Deep Dive"
+description: "Introduction to Prefix Sum and it's modified versions with codes and analysis."
+publishDate: 2026-01-19
+tags:
+  - "DSA"
+draft: false
+status: "published"
+---
+
+*Disclaimer: If any of you find any mistake or have any suggestions to improve this article, please feel free to reach out to me.*
+
+*This article is part of DSA blog series. In this article, we are gonna look at 
+prefix sum and it's modified versions.* 
+
+## Prefix Sum
+
+Prefix sum involves precomputing the cumulative sums of an array to enable queries regarding subarray sums like range sum.
+This allows `O(1)` time complexity for sum queries after an `O(n)` preprocessing step. The following is an representation
+of prefix sum array with leading zero which is the most common and recommended way to implement prefix sum.
+
+<img
+  src="/dsa/prefix-sum.drawio.svg"
+  alt="Prefix Sum"
+  style={{ 
+    margin: "0 auto", 
+    display: "block",  
+    }}
+/>
+
+### Template
+
+```cpp
+vector<int> prefixSum(n+1, 0);
+for(int i = 0; i < n; i++){
+    prefixSum[i+1] = prefixSum[i] + arr[i];
+}
+```
+
+```python 
+prefix_sum = [0] * (n + 1)
+for i in range(n):
+    prefix_sum[i + 1] = prefix_sum[i] + arr[i]
+```
+
+## Range Sum (Static)
+
+Sum of all the elements in the array from index `l` to `r` can be calculated by using the prefix sum array as :
+
+<img
+  src="/dsa/range-sum.drawio.svg"
+  alt="Range Sum"
+  style={{ 
+    margin: "0 auto", 
+    display: "block",  
+    marginBottom: "5px"
+    }}
+/>
+
+**Example**: In this example, for the array `arr = [1, 2, 3, 4, 5, 6]`, the prefix sum array is `prefixSum = [0, 1, 3, 6, 10, 15, 21]`.
+To find the sum of elements from index `2` to `4` (i.e., `3 + 4 + 5` which equals `12`), we can calculate it as follows:
+
+```cpp
+int l = 2, r = 4;
+int range_sum = prefixSum[r + 1] - prefixSum[l]; 
+// sum = prefixSum[5] - prefixSum[2] = 15 - 3 = 12
+```
+
+The variants of this range sum can be used to solve various problems like:
+- **Range Count**: Count the number of time a particular element `x` appears in a given range. 
+- **Range Existence**: Check if a particular element `x` exists in a given range. 
+
+Both these problems require `x` to be fixed before constructing prefix sum. A variable `x` is out of scope for prefix sum array construction.
+
+## Subarray sum equals K
+
+This is slightly modified version of range sum problem where we need to find the count of subarrays whose sum equals to `K`.
+
+### Approach
+1. Construct prefix sum array.
+2. Iterate through the prefix sum array and update the frequency map of prefix sums encountered so far.
+3. For each prefix sum `prefixSum` check if there exists a prefix sum `prefixSum - K` in the frequency map. 
+If it exists, it means there is a subarray ending at current index whose sum equals to `K` (there might be multiple such subarrays).
+4. Add the frequency of `prefixSum - K` to the result count.
+
+<img
+  src="/dsa/subarray-with-sum-k.drawio.svg"
+  alt="Subarray Sum Equals K"
+  style={{ 
+    margin: "0 auto", 
+    display: "block",  
+    marginBottom: "5px"
+    }}
+/>
+
+
+```cpp
+int subarraySum(vector<int>& nums, int k) {
+    int n = nums.size();
+    vector<int> prefixSum(n + 1, 0);
+    unordered_map<int, int> prefixFreq;
+    prefixFreq[0] = 1;
+
+    // Build prefix sum
+    for (int i = 0; i < n; i++) {
+        prefixSum[i + 1] = prefixSum[i] + nums[i];
+    }
+
+    int count = 0;
+    for (int i = 1; i <= n; i++) {
+        count += prefixFreq[prefixSum[i] - k];
+        prefixFreq[prefixSum[i]]++;
+    }
+
+    return count;
+}
+```
+
+```python
+def subarraySum(self, nums: List[int], k: int) -> int:
+    n = len(nums)
+    prefixSum = [0] * (n + 1)
+    prefixFreq= defaultdict(int)
+    prefixFreq[0] = 1
+
+    for i in range(n):
+        prefixSum[i+1] = prefixSum[i] + nums[i]
+
+    count = 0
+    for i in range(1, n+1):
+        count += prefixFreq[prefixSum[i] - k]
+        prefixFreq[prefixSum[i]] += 1
+
+    return count
+```
+
+*Disclaimer: `unordered_map` in C++ returns 0 for non-existing keys. 
+Similarly, `defaultdict(int)` in Python initializes non-existing keys to 0.*
+
+*Challenge: This problem can be solved without constructing prefix sum array explicitly.*
+
+## Longest/Smallest subarray with sum K
+
+This problems is a modifed version of "Subarray sum equals K" problem where we need to find the length of 
+longest/smallest subarray whose sum equals to `K`.
+
+### Approach
+1. Construct prefix sum array.
+2. Iterate through the prefix sum array and update the first occurrence index map of prefix sums encountered
+so far. (This map stores the first index rather than frequency)
+3. For each prefix sum `prefixSum` check if there exists a prefix sum `prefixSum - K` in the first occurrence index map. 
+If it exists, it means there is a subarray ending at current index whose sum equals to `K`.
+4. Calculate the length of this subarray and update the result accordingly.
+5. For longest subarray, take maximum length and for smallest subarray, take minimum length.
+
+<img
+  src="/dsa/longest-subarray-with-sum-k.drawio.svg"
+  alt="Longest Subarray Sum Equals K"
+  style={{ 
+    margin: "0 auto", 
+    display: "block",  
+    marginBottom: "5px"
+    }}
+/>
+
+```cpp
+int longestSubArray(vector<int>& nums, int k) {
+    int n = nums.size();
+    vector<int> prefixSum(n + 1, 0);
+    unordered_map<int, int> prefixIndex;
+    prefixIndex[0] = 0;
+
+    // Build prefix sum
+    for (int i = 0; i < n; i++) {
+        prefixSum[i + 1] = prefixSum[i] + nums[i];
+    }
+
+    int ans = 0;
+    for(int i = 1; i <= n; i++){
+        if(prefixIndex.find(prefixSum[i] - k) != prefixIndex.end()){
+            curr = i - prefixIndex[prefixSum[i] - k];   
+            ans = max(ans, curr);
+        }
+        // Store only first occurrence
+        if(prefixIndex.find(prefixSum[i]) == prefixIndex.end()){
+            prefixIndex[prefixSum[i]] = i;
+        }
+    }
+
+    return ans;
+}
+```
+
+```python
+def subarraySum(self, nums: List[int], k: int) -> int:
+    n = len(nums)
+    prefixSum = [0] * (n + 1)
+    prefixIndex = {0:0}
+
+    for i in range(n):
+        prefixSum[i+1] = prefixSum[i] + nums[i]
+
+    ans = 0
+    for i in range(1, n+1):
+        if (prefixSum[i] - k) in prefixIndex:
+            curr = i - prefixIndex[prefixSum[i] - k]    
+            ans = max(ans, curr)
+
+        if prefixSum[i] not in prefixIndex:
+            prefixIndex[prefixSum[i]] = i   
+
+    return ans
+```
+
+## Subarray with equal number of 0s and 1s
+
+This problem is another modified version of "Subarray sum equals K" problem where we need to find the subarrays 
+with equal number of 0s and 1s.
+
+### Approach
+1. Convert all 0s in the array to -1s. This way, finding subarrays with equal number of 0s and 1s becomes equivalent to finding subarrays with sum 0.
+2. Follow the same approach as "Subarray sum equals K" problem with `K = 0`.
+3. This problem can be asked in many ways:
+   - Count of subarrays with equal number of 0s and 1s.
+   - Length of longest subarray with equal number of 0s and 1s.
+   - Length of smallest subarray with equal number of 0s and 1s.
+
+Each of these can be solved using the same approach as discussed in previous problems.
+
+
+```cpp
+int subarrayEqual(vector<int>& nums) {
+    int n = nums.size();
+    for (int i = 0; i < n; i++) {
+        if (nums[i] == 0) nums[i] = -1;
+    }
+
+    vector<int> prefixSum(n + 1, 0);
+    unordered_map<int, int> prefixFreq;
+    prefixFreq[0] = 1;
+
+    // Build prefix sum
+    for (int i = 0; i < n; i++) {
+        prefixSum[i + 1] = prefixSum[i] + nums[i];
+    }
+
+    int count = 0;
+    for (int i = 1; i <= n; i++) {
+        count += prefixFreq[prefixSum[i]];
+        prefixFreq[prefixSum[i]]++;
+    }
+
+    return count;
+}
+```
+
+```python
+def subarrayEqual(self, nums: List[int]) -> int:
+    n = len(nums)
+    for i in range(n):
+        if nums[i] == 0:
+            nums[i] = -1
+
+    prefixSum = [0] * (n + 1)
+    prefixFreq= defaultdict(int)
+    prefixFreq[0] = 1
+
+    for i in range(n):
+        prefixSum[i+1] = prefixSum[i] + nums[i]
+
+    count = 0
+    for i in range(1, n+1):
+        count += prefixFreq[prefixSum[i]]
+        prefixFreq[prefixSum[i]] += 1
+
+    return count
+```
+
+*Note: This above code is same as "Subarray sum equals K" problem with `K = 0` after converting 0s to -1s.*
+
+## Subarray divisible by K
+
+This problem is another modified version of "Subarray sum equals K" problem where we need to find the number of subarrays 
+whose sum is divisible by `K`. It is almost similar to "Subarray sum equals K" problem with slight modification in checking condition.
+The previous check for `prefixSum - K` is replaced with checking for same modulo value. The modulo in this cases is 
+computed as `mod = ((prefixSum % K) + K) % K` to handle negative values correctly.
+
+### Approach
+1. Construct prefix sum array.
+2. Iterate through the prefix sum array and update the frequency map of prefix sums modulo `K` encountered so far.
+3. For each prefix sum `prefixSum`, calculate `mod = ((prefixSum % K) + K) % K`.
+4. Check if there exists a prefix sum with the same modulo `mod` in the frequency map. 
+If it exists, it means there is a subarray ending at current index whose sum is divisible by `K`.
+5. Add the frequency of this modulo to the result count.
+
+**Important Note**: If we observe carefully, we are calculating mod as `mod = ((prefixSum % K) + K) % K` and 
+not simply `mod = prefixSum % K`. This is done to handle negative values of prefix sum correctly.
+
+```cpp
+int subarraysDivByK(vector<int>& nums, int k) {
+    int n = nums.size();
+    vector<int> prefixSum(n + 1, 0);
+    unordered_map<int, int> modFreq;
+    modFreq[0] = 1;
+
+    // Build prefix sum
+    for (int i = 0; i < n; i++) {
+        prefixSum[i + 1] = prefixSum[i] + nums[i];
+    }
+
+    int count = 0;
+    for (int i = 1; i <= n; i++) {
+        int mod = ((prefixSum[i] % k) + k) % k;
+        count += modFreq[mod];
+        modFreq[mod]++;
+    }
+    return count;
+}
+```
+
+```python
+def subarraysDivByK(self, nums: List[int], k: int) -> int
+    n = len(nums)
+    prefixSum = [0] * (n + 1)
+    modFreq= defaultdict(int)
+    modFreq[0] = 1
+
+    for i in range(n):
+        prefixSum[i+1] = prefixSum[i] + nums[i]
+
+    count = 0
+    for i in range(1, n+1):
+        mod = ((prefixSum[i] % k) + k) % k
+        count += modFreq[mod]
+        modFreq[mod] += 1
+
+    return count
+```
+
+## Range update and range sum query
+
+This is a modified version of range sum problem where we need to perform multiple range updates and at the need to answer 
+the queries regarding range sums.
+
+*Note: In this problem, the queries are only after all the updates are performed. Intermediate queries are not allowed, 
+we need fenwick tree or segment tree for such cases*.
+
+Consider the following example:
+- Initial array: `[1, 2, 3, 4, 5]`
+- Updates:
+    1. Add `3` to range `[1, 3]` 
+        - After this update, the array becomes `[1, 5, 6, 7, 5]`
+    2. Add `2` to range `[0, 2]` 
+        - After this update, the array becomes `[3, 7, 8, 7, 5]`
+    3. Add `1` to range `[2, 4]` 
+        - After this update, the array becomes `[3, 7, 9, 8, 6]`
+- Queries:
+    1. Sum of range `[1, 3]`
+        - The sum is `7 + 9 + 8 = 24`
+    2. Sum of range `[0, 4]`
+        - The sum is `3 + 7 + 9 + 8 + 6 = 33`
+
+### Approach
+
+There are two main ways to approach this problem:
+
+#### Using delta array
+
+1. A delta array is a array of same size as original array initialized to 0.
+2. For each range update `[l, r]` with value `val`, we do:
+   - `delta[l] += val`
+   - `delta[r + 1] -= val` (if `r + 1` is within bounds)
+3. Calculate the prefix sum of delta array to get the **add array**.
+4. Add the **add array** to the original array to get the final updated array.
+
+<img
+  src="/dsa/range-updates-delta.drawio.svg"
+  alt="Range Updates using Delta Array"
+  style={{ 
+    margin: "0 auto", 
+    display: "block",  
+    marginBottom: "5px"
+    }}
+/>
+
+```cpp
+vector<int> arr = {1, 2, 3, 4, 5};
+
+vector<int> rangeUpdate(int n, vector<tuple<int, int, int>>& updates) {
+    vector<int> delta(n + 1, 0);
+
+    for (auto& [l, r, val] : updates) {
+        delta[l] += val;
+        if (r + 1 < n) {
+            delta[r + 1] -= val;
+        }
+    }
+
+    vector<int> add(n, 0);
+    add[0] = delta[0];
+    for (int i = 1; i < n; i++) {
+        add[i] = add[i - 1] + delta[i];
+    }
+
+    vector<int> updatedArr(n);
+    for (int i = 0; i < n; i++) {
+        updatedArr[i] = arr[i] + add[i];
+    }
+
+    return updatedArr;
+}
+``` 
+
+```python
+arr = [1, 2, 3, 4, 5]
+
+def range_update(n, updates):
+    delta = [0] * (n + 1)
+
+    for l, r, val in updates:
+        delta[l] += val
+        if r + 1 < n:
+            delta[r + 1] -= val
+    
+    add = [0] * n
+    add[0] = delta[0]
+    for i in range(1, n):
+        add[i] = add[i-1] + delta[i]
+
+    updated_arr = [arr[i] + add[i] for i in range(n)]
+    return updated_arr
+```
+
+**Note: After getting the updated array, we can construct the prefix sum array again for this updated array for range sum queries.**
+
+There is another way to look at this problem using difference array. 
+
+#### Using difference array
+1. A difference array is an array where each element at index `i` represents the difference between `arr[i]` and `arr[i-1]`.
+2. For each range update `[l, r]` with value `val`, we do
+    - `diff[l] += val`
+    - `diff[r + 1] -= val` (if `r + 1` is within bounds)
+3. Calculate the prefix sum of difference array to get the final updated array.
+
+<img
+  src="/dsa/range-updates-difference.drawio.svg"
+  alt="Range Updates using Difference Array"
+  style={{ 
+    margin: "0 auto", 
+    display: "block",  
+    marginBottom: "5px"
+    }}
+/>
+
+## 2D Prefix Sum
+
+2D prefix sum is an extension of the 1D prefix sum concept to two-dimensional arrays (matrices). 
+It allows for efficient calculation of the sum of elements within a rectangular submatrix. 
+
+Example: Consider the following 2D array (matrix):
+
+```
+1 2 3           
+4 5 6       
+7 8 9
+```
+The 2D prefix sum array for this matrix would be:
+
+```
+0  0  0  0
+0  1  3  6
+0  5 12 21
+0 12 27 45
+```
+
+The efficient way to calculate the sum of elements in a submatrix defined by its top-left corner `(r1, c1)` and bottom-right corner `(r2, c2)` is:  
+
+```python
+sum = prefixSum[r2 + 1][c2 + 1] - prefixSum[r1][c2 + 1] - prefixSum[r2 + 1][c1] + prefixSum[r1][c1]
+```
+*Note: This is similar to inclusion-exclusion principle.*
+
+### Approach
+
+1. Construct a 2D prefix sum array with an extra row and column initialized to 0.
+2. The value at each cell `(i, j)` in the prefix sum array describes the sum of all elements in the sub matrix from `(0, 0)` to `(i-1, j-1)`.
+3. The value at each cell can be computed using the formula:
+   ```python
+   prefixSum[i][j] = matrix[i-1][j-1] + prefixSum[i-1][j] + prefixSum[i][j-1] - prefixSum[i-1][j-1]
+   ```
+4. Queries for submatrix sums can be answered in `O(1)` time using the formula mentioned above.
+    ```python
+    sum = prefixSum[r2 + 1][c2 + 1] - prefixSum[r1][c2 + 1] - prefixSum[r2 + 1][c1] + prefixSum[r1][c1]
+    ```
+
+```cpp
+class 2DPrefixSum {
+    vector<vector<int>> prefixSum;
+public:
+    2DPrefixSum(vector<vector<int>>& matrix) {
+        int m = matrix.size();
+        int n = matrix[0].size();
+        prefixSum.assign(m+1, vector<int>(n+1, 0));
+
+        for(int i = 1; i <= m; i++){
+            for(int j = 1; j <= n; j++){
+                prefixSum[i][j] = matrix[i-1][j-1] + prefixSum[i][j-1] + prefixSum[i-1][j] - prefixSum[i-1][j-1];
+            }
+        }
+    }
+
+    int sumRegion(int row1, int col1, int row2, int col2) {
+        return prefixSum[row2+1][col2+1] - prefixSum[row1][col2+1] - prefixSum[row2+1][col1] + prefixSum[row1][col1];
+    }
+};
+```
+
+```python
+class 2DPrefixSum:
+    def __init__(self, matrix: List[List[int]]):
+        m, n = len(matrix), len(matrix[0])
+        self.prefixSum = [[0] * (n + 1) for _ in range(m + 1)]
+
+        for i in range(1, m + 1):
+            for j in range(1, n + 1):
+                self.prefixSum[i][j] = matrix[i - 1][j - 1] 
+                                    + self.prefixSum[i][j - 1] 
+                                    + self.prefixSum[i - 1][j] 
+                                    - self.prefixSum[i - 1][j - 1]
+    
+    def sumRegion(self, row1: int, col1: int, row2: int, col2: int) -> int:
+        return self.prefixSum[row2 + 1][col2 + 1] 
+            - self.prefixSum[row1][col2 + 1] 
+            - self.prefixSum[row2 + 1][col1] 
+            + self.prefixSum[row1][col1]
+```
+
+## Time and Space Complexity 
+
+### Simple Prefix Sum and Range Sum Query
+- **Time Complexity**: 
+    - `O(n)` for preprocessing the prefix sum array.
+    - `O(1)` for each range sum query.
+- **Space Complexity**: `O(n)` for storing the prefix sum array.
+
+### Subarray Sum Equals K
+- **Time Complexity**: `O(n)` for iterating through the array once. Accessing and updating the frequency map (`unordered_map` in C++ and `defaultdict` in Python) takes `O(1)` on average.
+- **Space Complexity**: `O(n)` for storing the frequency map of prefix sums. 
+
+### Longest/Smallest Subarray with Sum K
+- **Time Complexity**: `O(n)` for iterating through the array once.
+- **Space Complexity**: `O(n)` for storing the first occurrence index map of prefix sums. 
+
+*Note: This problem complexity is same as above.*
+
+### Subarray with Equal Number of 0s and 1s
+- **Time Complexity**: `O(n)` for iterating through the array once.
+- **Space Complexity**: `O(n)` for storing the frequency map of prefix sums.
+
+### Subarray Divisible by K
+- **Time Complexity**: `O(n)` for iterating through the array once.
+- **Space Complexity**: `O(n)` for storing the frequency map of prefix sums modulo
+
+### 2D Prefix Sum
+- **Time Complexity**:
+    - `O(m * n)` for preprocessing the 2D prefix sum array.
+    - `O(1)` for each submatrix sum query.
+- **Space Complexity**: `O(m * n)` for storing the 2D prefix sum array.
+
+## Leetcode problems
+Search for leetcode problems based on names and tags. Here are few:
+- [Range Sum Query - Immutable](https://leetcode.com/problems/range-sum-query-immutable/)
+- [Contiguous Array](https://leetcode.com/problems/contiguous-array/description/)
+- [Subarray Sum Equals K](https://leetcode.com/problems/subarray-sum-equals-k/)
+- [Product of Array Except Self](https://leetcode.com/problems/product-of-array-except-self/)

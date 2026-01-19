@@ -29,7 +29,7 @@ export const notesIndex: NotesFolder[] = [
     entries: [
         {
         slug: 'prefix-sum',
-        collection: 'mini-blogs',
+        collection: 'blogs',
         }
     ],
   },
