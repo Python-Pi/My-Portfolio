@@ -1,0 +1,148 @@
+---
+const props = Astro.props;
+const { class: className, "data-language": language, ...rest } = props;
+
+const languageMap: Record<string, string> = {
+  js: "JavaScript",
+  ts: "TypeScript",
+  py: "Python",
+  rb: "Ruby",
+  go: "Go",
+  rs: "Rust",
+  java: "Java",
+  c: "C",
+  cpp: "C++",
+  html: "HTML",
+  css: "CSS",
+  json: "JSON",
+  bash: "Bash",
+  shell: "Shell",
+  md: "Markdown",
+  mdx: "MDX",
+  astro: "Astro",
+};
+
+const displayLanguage = language
+  ? languageMap[language] || language.toUpperCase()
+  : "Code";
+---
+
+<div class="code-block-wrapper">
+  <div class="code-block-header">
+    <span class="language-label">{displayLanguage}</span>
+
+    <button
+      type="button"
+      class="copy-button"
+      aria-label="Copy code to clipboard"
+    >
+      Copy
+    </button>
+  </div>
+  <pre class={className} data-language={language} {...rest}><slot /></pre>
+</div>
+
+<script>
+  const copyButtonLabel = "Copy";
+  const codeBlockWrapperClass = ".code-block-wrapper";
+
+  function attachCopyButtons() {
+    const wrappers = document.querySelectorAll(codeBlockWrapperClass);
+
+    wrappers.forEach((wrapper) => {
+      const button = wrapper.querySelector(".copy-button");
+      const pre = wrapper.querySelector("pre");
+
+      if (!button || !pre || !navigator.clipboard) return;
+
+      // Prevent double-binding if this function runs multiple times
+      if (button.hasAttribute("data-copy-attached")) return;
+      button.setAttribute("data-copy-attached", "true");
+
+      button.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(pre.innerText);
+          button.textContent = "Copied!";
+          button.classList.add("copied");
+
+          setTimeout(() => {
+            button.textContent = copyButtonLabel;
+            button.classList.remove("copied");
+          }, 2000);
+        } catch (err) {
+          console.error("Copy failed:", err);
+        }
+      });
+    });
+  }
+
+  attachCopyButtons();
+  // Support for View Transitions if enabled
+  document.addEventListener("astro:page-load", attachCopyButtons);
+</script>
+
+<style>
+  .code-block-wrapper {
+    margin: 2rem 0;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #111111;
+    border: 1px solid #262626;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .code-block-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background: #1a1a1a;
+    border-bottom: 1px solid #262626;
+    font-size: 0.8rem;
+    color: #cfcfcf;
+    font-family:
+      ui-monospace, "JetBrains Mono", "Cascadia Code", Menlo, Consolas,
+      "Courier New", monospace;
+  }
+
+  .language-label {
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+  }
+
+  /* Copy button */
+  .copy-button {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition:
+      background 0.2s ease,
+      color 0.2s ease;
+  }
+
+  .copy-button:hover {
+    background: rgba(255, 255, 255, 0.16);
+    color: var(--color-text);
+  }
+
+  .copy-button.copied {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: #fff;
+  }
+
+  /* Override the default pre margin since the wrapper handles it */
+  .code-block-wrapper :global(pre) {
+    margin: 0 !important;
+    border-radius: 0 !important;
+    border: none !important;
+    padding: 1rem !important;
+  }
+</style>

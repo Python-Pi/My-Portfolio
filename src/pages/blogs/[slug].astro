@@ -6,18 +6,19 @@
  * Reuses the writing collection as the canonical source.
  */
 
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import SEO from '../../components/SEO.astro';
-import StructuredData from '../../components/StructuredData.astro';
-import TableOfContents from '../../components/TableOfContents.astro';
-import ScrollToTop from '../../components/ScrollToTop.astro';
-import BackLink from '../../components/BackLink.astro';
-import ShareButtons from '../../components/ShareButtons.astro';
-import { getCollection, getEntry, render } from 'astro:content';
-import { getReadingTime } from '../../utils/readingTime';
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import SEO from "../../components/SEO.astro";
+import StructuredData from "../../components/StructuredData.astro";
+import TableOfContents from "../../components/TableOfContents.astro";
+import ScrollToTop from "../../components/ScrollToTop.astro";
+import BackLink from "../../components/BackLink.astro";
+import ShareButtons from "../../components/ShareButtons.astro";
+import CodeBlock from "../../components/CodeBlock.astro";
+import { getCollection, getEntry, render } from "astro:content";
+import { getReadingTime } from "../../utils/readingTime";
 
 export async function getStaticPaths() {
-  const articles = await getCollection('blogs', ({ data }) => {
+  const articles = await getCollection("blogs", ({ data }) => {
     return data.draft === false;
   });
   return articles.map((article) => ({
@@ -27,35 +28,29 @@ export async function getStaticPaths() {
 
 const { slug } = Astro.params;
 
-const article = await getEntry('blogs', slug!);
+const article = await getEntry("blogs", slug!);
 
 if (!article) {
-  return Astro.redirect('/404');
+  return Astro.redirect("/404");
 }
 
 const { Content, headings } = await render(article);
 
-const {
-  title,
-  description,
-  publishDate,
-  updatedDate,
-  tags,
-} = article.data;
+const { title, description, publishDate, updatedDate, tags } = article.data;
 
-const readingTime = getReadingTime(article.body || '');
+const readingTime = getReadingTime(article.body || "");
 
 function formatDate(date: Date): string {
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
+  return new Intl.DateTimeFormat("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   }).format(date);
 }
 ---
 
 <BaseLayout>
-  <SEO 
+  <SEO
     slot="head"
     title={`${title} - Blogs`}
     description={description}
@@ -85,31 +80,39 @@ function formatDate(date: Date): string {
         </time>
         <span class="meta-separator">·</span>
         <span class="reading-time">{readingTime}</span>
-        {updatedDate && (
-          <>
-            <span class="meta-separator">·</span>
-            <time class="updated-date" datetime={updatedDate.toISOString()}>
-              Updated {formatDate(updatedDate)}
-            </time>
-          </>
-        )}
+        {
+          updatedDate && (
+            <>
+              <span class="meta-separator">·</span>
+              <time class="updated-date" datetime={updatedDate.toISOString()}>
+                Updated {formatDate(updatedDate)}
+              </time>
+            </>
+          )
+        }
       </div>
-      {tags && tags.length > 0 && (
-        <div class="article-tags">
-          {tags.map((tag) => (
-            <span class="tag">{tag}</span>
-          ))}
-        </div>
-      )}
+      {
+        tags && tags.length > 0 && (
+          <div class="article-tags">
+            {tags.map((tag) => (
+              <span class="tag">{tag}</span>
+            ))}
+          </div>
+        )
+      }
     </header>
 
     <TableOfContents headings={headings} />
 
     <article class="article-content">
-      <Content />
+      <Content components={{ pre: CodeBlock }} />
     </article>
 
-    <ShareButtons title={title} description={description} url={Astro.url.href} />
+    <ShareButtons
+      title={title}
+      description={description}
+      url={Astro.url.href}
+    />
 
     <BackLink href="/blogs" text="All blogs" />
   </main>

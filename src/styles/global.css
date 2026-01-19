@@ -99,6 +99,7 @@
   --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
+
 /* CSS Reset and Base Styles */
 
 *,
@@ -152,6 +153,7 @@ ul,
 ol {
   list-style-position: inside;
 }
+
 
 /* Code */
 code {

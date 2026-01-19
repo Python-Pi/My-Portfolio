@@ -1,25 +1,29 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import SEO from '../../components/SEO.astro';
-import StructuredData from '../../components/StructuredData.astro';
-import TableOfContents from '../../components/TableOfContents.astro';
-import ScrollToTop from '../../components/ScrollToTop.astro';
-import BackLink from '../../components/BackLink.astro';
-import { getCollection, getEntry, render } from 'astro:content';
-import { getReadingTime } from '../../utils/readingTime';
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import SEO from "../../components/SEO.astro";
+import StructuredData from "../../components/StructuredData.astro";
+import TableOfContents from "../../components/TableOfContents.astro";
+import ScrollToTop from "../../components/ScrollToTop.astro";
+import BackLink from "../../components/BackLink.astro";
+import CodeBlock from "../../components/CodeBlock.astro";
+import { getCollection, getEntry, render } from "astro:content";
+import { getReadingTime } from "../../utils/readingTime";
 
 export async function getStaticPaths() {
-  const books = await getCollection('books', ({ data }) => data.draft === false);
+  const books = await getCollection(
+    "books",
+    ({ data }) => data.draft === false,
+  );
   return books.map((book) => ({
     params: { slug: book.id },
   }));
 }
 
 const { slug } = Astro.params;
-const book = await getEntry('books', slug!);
+const book = await getEntry("books", slug!);
 
 if (!book) {
-  return Astro.redirect('/404');
+  return Astro.redirect("/404");
 }
 
 const { Content, headings } = await render(book);
@@ -35,13 +39,13 @@ const {
   status,
 } = book.data;
 
-const readingTime = getReadingTime(book.body || '');
+const readingTime = getReadingTime(book.body || "");
 
 function formatDate(date: Date): string {
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
+  return new Intl.DateTimeFormat("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   }).format(date);
 }
 
@@ -86,47 +90,60 @@ function formatStatus(value?: string): string | undefined {
         </time>
         <span class="meta-separator">·</span>
         <span class="reading-time">{readingTime}</span>
-        {updatedDate && (
-          <>
-            <span class="meta-separator">·</span>
-            <time class="updated-date" datetime={updatedDate.toISOString()}>
-              Updated {formatDate(updatedDate)}
-            </time>
-          </>
-        )}
-        {status && (
-          <>
-            <span class="meta-separator">·</span>
-            <span class="book-status">{formatStatus(status)}</span>
-          </>
-        )}
+        {
+          updatedDate && (
+            <>
+              <span class="meta-separator">·</span>
+              <time class="updated-date" datetime={updatedDate.toISOString()}>
+                Updated {formatDate(updatedDate)}
+              </time>
+            </>
+          )
+        }
+        {
+          status && (
+            <>
+              <span class="meta-separator">·</span>
+              <span class="book-status">{formatStatus(status)}</span>
+            </>
+          )
+        }
       </div>
-      {(authors?.length || publisher) && (
-        <div class="book-context">
-          {authors && authors.length > 0 && (
-            <span class="book-context__item"><strong>Author{authors.length > 1 ? 's' : ''}:</strong> {authors.join(', ')}</span>
-          )}
-          {authors && authors.length > 0 && publisher && (
-            <span class="book-context__separator">·</span>
-          )}
-          {publisher && (
-            <span class="book-context__item"><strong>Publisher:</strong> {publisher}</span>
-          )}
-        </div>
-      )}
-      {tags && tags.length > 0 && (
-        <div class="article-tags">
-          {tags.map((tag) => (
-            <span class="tag">{tag}</span>
-          ))}
-        </div>
-      )}
+      {
+        (authors?.length || publisher) && (
+          <div class="book-context">
+            {authors && authors.length > 0 && (
+              <span class="book-context__item">
+                <strong>Author{authors.length > 1 ? "s" : ""}:</strong>{" "}
+                {authors.join(", ")}
+              </span>
+            )}
+            {authors && authors.length > 0 && publisher && (
+              <span class="book-context__separator">·</span>
+            )}
+            {publisher && (
+              <span class="book-context__item">
+                <strong>Publisher:</strong> {publisher}
+              </span>
+            )}
+          </div>
+        )
+      }
+      {
+        tags && tags.length > 0 && (
+          <div class="article-tags">
+            {tags.map((tag) => (
+              <span class="tag">{tag}</span>
+            ))}
+          </div>
+        )
+      }
     </header>
 
     <TableOfContents headings={headings} />
 
     <article class="article-content">
-      <Content />
+      <Content components={{ pre: CodeBlock }} />
     </article>
 
     <BackLink href="/books" text="All books" />

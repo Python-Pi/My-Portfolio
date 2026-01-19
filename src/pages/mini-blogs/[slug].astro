@@ -1,16 +1,20 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import SEO from '../../components/SEO.astro';
-import StructuredData from '../../components/StructuredData.astro';
-import TableOfContents from '../../components/TableOfContents.astro';
-import ScrollToTop from '../../components/ScrollToTop.astro';
-import BackLink from '../../components/BackLink.astro';
-import ShareButtons from '../../components/ShareButtons.astro';
-import { getCollection, getEntry, render } from 'astro:content';
-import { getReadingTime } from '../../utils/readingTime';
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import SEO from "../../components/SEO.astro";
+import StructuredData from "../../components/StructuredData.astro";
+import TableOfContents from "../../components/TableOfContents.astro";
+import ScrollToTop from "../../components/ScrollToTop.astro";
+import BackLink from "../../components/BackLink.astro";
+import ShareButtons from "../../components/ShareButtons.astro";
+import CodeBlock from "../../components/CodeBlock.astro";
+import { getCollection, getEntry, render } from "astro:content";
+import { getReadingTime } from "../../utils/readingTime";
 
 export async function getStaticPaths() {
-  const entries = await getCollection('mini-blogs', ({ data }) => data.draft === false);
+  const entries = await getCollection(
+    "mini-blogs",
+    ({ data }) => data.draft === false,
+  );
   return entries.map((entry) => ({
     params: { slug: entry.id },
   }));
@@ -18,35 +22,29 @@ export async function getStaticPaths() {
 
 const { slug } = Astro.params;
 
-const entry = await getEntry('mini-blogs', slug!);
+const entry = await getEntry("mini-blogs", slug!);
 
 if (!entry) {
-  return Astro.redirect('/404');
+  return Astro.redirect("/404");
 }
 
 const { Content, headings } = await render(entry);
 
-const {
-  title,
-  description,
-  publishDate,
-  updatedDate,
-  tags,
-} = entry.data;
+const { title, description, publishDate, updatedDate, tags } = entry.data;
 
-const readingTime = getReadingTime(entry.body || '');
+const readingTime = getReadingTime(entry.body || "");
 
 function formatDate(date: Date): string {
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
+  return new Intl.DateTimeFormat("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   }).format(date);
 }
 ---
 
 <BaseLayout>
-  <SEO 
+  <SEO
     slot="head"
     title={`${title} - Mini Blogs`}
     description={description}
@@ -76,31 +74,39 @@ function formatDate(date: Date): string {
         </time>
         <span class="meta-separator">·</span>
         <span class="reading-time">{readingTime}</span>
-        {updatedDate && (
-          <>
-            <span class="meta-separator">·</span>
-            <time class="updated-date" datetime={updatedDate.toISOString()}>
-              Updated {formatDate(updatedDate)}
-            </time>
-          </>
-        )}
+        {
+          updatedDate && (
+            <>
+              <span class="meta-separator">·</span>
+              <time class="updated-date" datetime={updatedDate.toISOString()}>
+                Updated {formatDate(updatedDate)}
+              </time>
+            </>
+          )
+        }
       </div>
-      {tags && tags.length > 0 && (
-        <div class="article-tags">
-          {tags.map((tag) => (
-            <span class="tag">{tag}</span>
-          ))}
-        </div>
-      )}
+      {
+        tags && tags.length > 0 && (
+          <div class="article-tags">
+            {tags.map((tag) => (
+              <span class="tag">{tag}</span>
+            ))}
+          </div>
+        )
+      }
     </header>
 
     <TableOfContents headings={headings} />
 
     <article class="article-content">
-      <Content />
+      <Content components={{ pre: CodeBlock }} />
     </article>
 
-    <ShareButtons title={title} description={description} url={Astro.url.href} />
+    <ShareButtons
+      title={title}
+      description={description}
+      url={Astro.url.href}
+    />
 
     <BackLink href="/mini-blogs" text="All mini blogs" />
   </main>
@@ -187,12 +193,13 @@ function formatDate(date: Date): string {
 
     .article-content :global(ul),
     .article-content :global(ol) {
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.1rem;
       padding-left: 1.5rem;
     }
 
     .article-content :global(li) {
-      margin-bottom: 0.75rem;
+      margin-bottom: 0.4rem;
+      line-height: 1.45;
     }
 
     .article-content :global(code) {

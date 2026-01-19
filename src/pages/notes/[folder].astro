@@ -3,8 +3,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import SEO from '../../components/SEO.astro';
 import PageStats from '../../components/PageStats.astro';
 import { pagesConfig } from '../../pages.config';
-import { notesIndex } from '../../data/notes-index';
-import type { NotesFolder, NotesEntryCollection, NotesEntry } from '../../data/notes-index';
+import { notesIndex } from '../../content/notes/notes-index';
+import type { NotesFolder, NotesEntryCollection, NotesEntry } from '../../content/notes/notes-index';
 import { getEntry } from 'astro:content';
 
 export const prerender = true;

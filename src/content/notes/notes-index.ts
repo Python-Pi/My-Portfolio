@@ -22,6 +22,17 @@ export interface NotesFolder {
 }
 
 export const notesIndex: NotesFolder[] = [
+    {
+    id: 'dsa',
+    title: 'Data Structures & Algorithms',
+    description: 'Notes on important patterns and ways to approach DSA problems.',
+    entries: [
+        {
+        slug: 'prefix-sum',
+        collection: 'mini-blogs',
+        }
+    ],
+  },
   {
     id: 'cpp',
     title: 'C++ Core',
@@ -30,6 +41,21 @@ export const notesIndex: NotesFolder[] = [
       {
         slug: 'smart-pointers',
         collection: 'blogs',
+      },
+    ],
+  },
+  {
+    id: 'machine-learning',
+    title: 'Machine Learning',
+    description: 'Notes on machine learning concepts and techniques.',
+    entries: [
+      {
+        slug: 'why-transformers-dont-use-batch-normalization',
+        collection: 'mini-blogs',
+      },
+      {
+        slug: 'what-is-collapse-in-self-supervised-learning',
+        collection: 'mini-blogs',
       },
     ],
   }
