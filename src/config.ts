@@ -57,7 +57,7 @@ export const siteConfig = {
     github: 'https://github.com/Python-Pi',
 
     /** LinkedIn profile URL */
-    linkedin: 'https://www.linkedin.com/in/tousif-ahamad-81b379121/',
+    linkedin: 'https://www.linkedin.com/in/tousif-ahamad/',
 
     /** Mail */
     email: 'mailto:tousfchinnu@gmail.com',
