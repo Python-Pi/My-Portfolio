@@ -14,7 +14,7 @@ tags:
   - "vision-transformers"
 link: "https://openaccess.thecvf.com/content/ICCV2021/papers/Caron_Emerging_Properties_in_Self-Supervised_Vision_Transformers_ICCV_2021_paper.pdf"
 draft: false
-status: "ongoing"
+status: "published"
 ---
 
 import ScrollLink from '../../components/ScrollLink.astro';
@@ -100,14 +100,14 @@ where $$ \tau_s > 0 $$ is the temperature parameter that controls the smoothness
 Higher values of $$ \tau $$ produce softer probability distributions over classes whereas lower values produce sharper distributions.
 
 
-Given a fixed teacher network $$ g_t $$, the student network $$ g_s $$ is trained to minimize the cross-entropy loss between the two distributions:
+Given a fixed teacher network $$ g_t $$, the student network $$ g_s $$ is trained to minimize the <ScrollLink target="key-concepts"> cross entropy loss </ScrollLink> between the two distributions:
 
 ```math
 \min_{s} \; H\!\left(P_t(x),\, P_s(x)\right)
 ```
 where $$ H(q, p) = - \sum_{y} q(y) \log p(y) $$ 
 
-In order to train both the student and teacher networks without any labels, we construct different distoretd views 
+In order to train both the student and teacher networks without any labels, we construct different distorted views 
 of an image with multi-crop strategy. More precisely, we generate a set $$ \mathcal{V} $$  of different views which contain two 
 <ScrollLink target="key-concepts">global views</ScrollLink> and several other <ScrollLink target="key-concepts">local views</ScrollLink> for each image. 
 All the crops are passed through the student network whereas only the global crops are passed through the teacher network. The loss minimization function
@@ -120,6 +120,10 @@ for this can be expressed as:
 H\!\left(P_t(x), P_s(x')\right)
 ```
 where $$ x_1^g, x_2^g $$ are the two global crops of the image $$ x $$ and $$ \mathcal{V} $$ is the set of all views of the image.
+
+*We used cross entropy loss between the teacher and student and tried to minimize it. 
+It is done so that the student learns to predict the same (or similar) output distribution as that of teacher 
+for different views of the same image.*
 
 ### Teacher Network Updating
 
@@ -149,10 +153,119 @@ $$K$$-dimensional outputs. A <ScrollLink target="key-concepts">predictor</Scroll
 Of particular interest, we note that unlike standard convnets, ViT architectures do not use batch normalizations (BN) by default. Therefore,
 when applying DINO to ViT we do not use any BN also in the projection heads, making the system entirely *BN-free*.
 
+### Avoiding Collapse
+
+[See Mini Blog: What is Collapse in Self-Supervised Learning?](/mini-blogs/what-is-collapse-in-self-supervised-learning)
+
+Teacher model produces logits over a set of dimensions. Collapse in this context can happen in two main ways:
+- A single dimension dominating the output, leading the student model to always predict that dimension.
+- The model producing uniform or near-uniform distributions across all dimensions, leading to a lack of meaningful information.
+
+This paper use **Centering + Sharpening** to avoid collapse in the student-teacher framework. Each of 
+these techniques tackle one of the above issues and they work in opposite directions. Hence, using them together
+helps maintain a balance and prevents collapse effectively.
+
+#### Centering
+
+Centering addresses the first failure mode by maintaining a running exponential-moving-average of the 
+teacher's batch-mean output and subtracting this mean from future teacher logits. 
+Intuitively, this removes global bias and prevents any single dimension from being consistently large across the dataset, 
+forcing the model to use all dimensions more evenly. However, centering alone pushes the system toward the second failure mode. 
+
+```math
+g_t (x) \leftarrow g_t (x) - c
+```
+Here, $$ c $$ is the running mean of the teacher outputs. This mean is updated after every batch as follows:
+
+```math
+c \leftarrow m \, c + (1 - m) \, \frac{1}{B} \sum_{i=1}^{B} g_t(x_i)
+```
+where $$ m \in (0, 1) $$ is the momentum parameter, $$ B $$ is the batch size, and $$ x_i $$ are the samples in the current batch.
+
+#### Sharpening
+
+Sharpening counteracts this by applying a low-temperature softmax to the teacher outputs, 
+which amplifies small differences between logits and produces confident, peaked distributions, preventing uniformity but, 
+if used alone, risking domination by the same dimension everywhere.
+
+*Think of analogy in image processing, where centering is like adjusting brightness to avoid overly bright areas, 
+while sharpening is like enhancing contrast to ensure details stand out.*
+
+## Results
+
+Here are some of the impressive results achieved by DINO with ViTs on various datasets without any finetuning:
+<img
+  src="/emerging-properties-of-self-supervised-vits/img2.PNG"
+  alt="Image Retrieval"
+  style={{
+    display: "block",
+    margin: "0 auto",
+    width: "100%",
+    maxWidth: "600px",
+    height: "auto",
+    marginBottom: "10px"
+  }}
+/>
+
+<img
+  src="/emerging-properties-of-self-supervised-vits/img3.PNG"
+  alt="Copy Detection"
+  style={{
+    display: "block",
+    margin: "0 auto",
+    width: "100%",
+    maxWidth: "600px",
+    height: "auto",
+    marginBottom: "10px"
+  }}
+/>
+
+<img 
+  src="/emerging-properties-of-self-supervised-vits/img4.PNG"
+  alt="Video Object Segmentation"
+  style={{
+    display: "block",
+    margin: "0 auto",
+    width: "100%",
+    maxWidth: "600px",
+    height: "auto",
+    marginBottom: "10px"
+  }}
+/>
+
+<img 
+  src="/emerging-properties-of-self-supervised-vits/img5.PNG"
+  alt="Attention Maps"
+  style={{
+    display: "block",
+    margin: "0 auto",
+    width: "100%",
+    maxWidth: "600px",
+    height: "auto",
+    marginBottom: "10px"
+  }}
+/>
+
+<img 
+  src="/emerging-properties-of-self-supervised-vits/img6.PNG"
+  alt="Attention Maps"
+  style={{
+    display: "block",
+    margin: "0 auto",
+    width: "100%",
+    maxWidth: "600px",
+    height: "auto",
+    marginBottom: "10px"
+  }}
+/>
+
 
 
 
 ## Conclusion
+
+The paper has shown the potential of self-supervised pretraining a standard ViT model, achieving performance that are
+comparable with the best convnets specifically designed for this setting.
 
 The paper has identified several interesting properties of self-supervised ViTs that do not emerge from supervised ViTs or convnets:
 - Self-supervised ViT features explicitly contain the scene layout and, in particular, object boundaries. This information is directly accessible in the self-attention modules of the last block.

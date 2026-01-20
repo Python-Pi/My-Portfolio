@@ -8,5 +8,46 @@ tags:
 draft: false
 ---
 
-## Introduction
+## Similarity based SSL?
 
+Similarity-based self-supervised learning methods are the most common approaches to SSL. 
+These methods train models to produce similar representations for different views (augmentations) of the same input data,
+while ensuring that representations of different inputs remain distinct.
+
+### What is Collapse in similarity based SSL?
+
+In the context of self-supervised learning (SSL), "collapse" refers to the 
+state where a model learns trivial (useless) representations of the input data.
+This typically happens when the model maps all inputs to the same output or a very limited set of outputs,
+resulting in a loss of meaningful information about the data.
+
+
+## How to prevent Collapse?
+
+To prevent collapse in similarity-based SSL, several techniques can be employed such as:
+
+#### 1. Contrastive Loss
+
+In essence, 
+- Positive pairs (different views of the same input) are pulled together in the representation space.
+- Negative pairs (views from different inputs) are pushed apart.
+
+This encourages the model to learn discriminative features that capture the underlying structure of the data. Collapse is 
+prevented because predicting the same representation for all inputs would increase the loss due to the presence of negative pairs clause.
+
+#### 2. Clustering constriants
+
+In essence,
+- Assigns representations to clusters
+- Forces the model to balance the cluster assignments
+
+This prevents collapse by ensuring that the model cannot assign all inputs to the same cluster without incurring a loss.
+
+#### 3. Predictor 
+
+In essence,
+- Introduces an additional network (predictor) on one side of the SSL framework(typically the student network in teacher-student setups)
+
+If both the student and teacher networks are identical, 
+a constant representation would minimize the loss, leading to collapse.
+Predictor network breaks this symmetry, which forces the student network to learn meaningful representations to predict the teacher's output.
