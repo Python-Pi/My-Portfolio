@@ -1,0 +1,56 @@
+---
+const {
+  leftSrc,
+  leftLabel,
+  rightSrc,
+  rightLabel,
+  ratio = "4 / 3",
+} = Astro.props;
+---
+
+<style>
+  .image-pair {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  .image-pair figure {
+    margin: 0;
+    text-align: center;
+  }
+
+  .image-box {
+    aspect-ratio: var(--ratio);
+    overflow: hidden;
+    border-radius: 8px;
+  }
+
+  .image-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  @media (max-width: 640px) {
+    .image-pair {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<div class="image-pair" style={`--ratio:${ratio}`}>
+  <figure>
+    <div class="image-box">
+      <img src={leftSrc} alt={leftLabel} />
+    </div>
+    <figcaption>{leftLabel}</figcaption>
+  </figure>
+
+  <figure>
+    <div class="image-box">
+      <img src={rightSrc} alt={rightLabel} />
+    </div>
+    <figcaption>{rightLabel}</figcaption>
+  </figure>
+</div>
