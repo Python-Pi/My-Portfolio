@@ -1,0 +1,85 @@
+---
+title: "How to break the Vigenere Cipher"
+description: "Guide to break the Vigenere Cipher using Statistical analysis"
+publishDate: 2026-01-31
+tags:
+  - "Cryptography"
+  - "Vigenere Cipher"
+draft: false
+---
+
+## What is Vigenere Cipher?
+
+Vigenere Cipher is a historical method of encrypting alphabetic text. 
+It encrypts text by applying multiple Caesar ciphers (Shift cipher) instead of just one.
+
+Think of it as:
+> Caesar Cipher + Repeating Key 
+
+Each letter in the key determines the shift for the corresponding letter in the plaintext.
+
+> shift = position of key letter in alphabet (A=0, B=1, ..., Z=25)
+
+Consider the plaintext: "ATTACKATDAWN" and key: "LEMON", the encrypted ciphertext would be "LXFOPVEFRNHR".
+
+<img
+  src="/cryptography-mini-blogs/vigenere-cipher.drawio.svg"
+  alt="Prefix Sum"
+  style={{ 
+    margin: "0 auto", 
+    display: "block",  
+    }}
+/>
+<br></br>
+
+The image clearly shows how we encrypt using Vigenere Cipher.
+
+## How to break Vigenere Cipher?
+
+Breaking Vigenere Cipher involves two cricual steps:
+- Finding the key length
+- Finding the key itself
+
+### Finding the key length
+
+We can use different approaches to find the key length, the two popular ones are:
+- Using Kasiski Examination
+- Using Index of Coincidence (IC) method 
+
+#### Kasiski Examination
+
+If there are repeated sequences of letters (typically of size 3 or more) in the ciphertext, they may have been encrypted 
+using the same segment of the key. So, in this cases both the original plaintext segments and the corresponding key segments 
+matches. 
+
+Since we use a repeating key, the distance between these repeated sequences in the ciphertext is likely to be a multiple of the key length.
+So, by finding the distances between these repeated sequences and calculating their greatest common divisor (GCD), we can estimate the key length.
+
+#### Index of Coincidence (IC) method
+
+Index of Coincidence (IC) is a statistical measure that helps to determine the likelihood of two randomly selected letters from the text being the same.
+
+- For English text, the IC is typically around 0.068.
+- For random text, the IC is around 0.0385. (1/26)
+
+To find the key length using IC:
+- Assume a key length 'n'.
+- Divide the ciphertext into 'n' different columns. Each columns is encrypted using the same Caesar cipher. (i.e. same letter) 
+- So, technically we have 'n' different Caesar ciphers corresponding to each column.
+- Caesar cipher doesn't change the frequency distribution of letters, so each column should have an IC close to that of English text (0.068).
+- Calculate the average IC for all columns.
+- Repeat steps 1-5 for different values of 'n' (key length).
+- The value of 'n' that gives an average IC closest to 0.068 is likely the key length.
+
+### Finding the key
+
+Once we have the key length, we can find the key itself by treating each column as a separate Caesar cipher.
+- For each column, perform frequencry analysis to determine the letter frequencies, typically in English text 'E' is the most frequent letter.
+- Assume the most frequent letter in the column corresponds to 'E' in plaintext. (we can try other letters too)
+- Calculate the shift required to map the most frequent letter in the column to 'E'.
+- This shift gives us the corresponding letter in the key.
+- Repeat this for all columns to get the complete key.
+
+Once we have the key, we can decrypt the ciphertext using the Vigenere decryption process.
+
+The implemention of the above can be found at [Github Repo](https://github.com/Python-Pi/Vigenere-cipher)
