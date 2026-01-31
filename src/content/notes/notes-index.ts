@@ -58,5 +58,16 @@ export const notesIndex: NotesFolder[] = [
         collection: 'mini-blogs',
       },
     ],
+  },
+  {
+    id: 'math',
+    title: 'Mathematics',
+    description: 'Notes on various mathematical concepts.',
+    entries: [
+      {
+        slug: 'math-distributions',
+        collection: 'mini-blogs',
+      }
+    ],
   }
 ];

@@ -59,6 +59,12 @@ So, by finding the distances between these repeated sequences and calculating th
 
 Index of Coincidence (IC) is a statistical measure that helps to determine the likelihood of two randomly selected letters from the text being the same.
 
+Consider $f_i$ as the frequency of the i-th letter in the text and N as the total number of letters in the text, the IC is calculated using the formula:
+
+```math 
+IC = \frac{\sum_{i=0}^{25} f_i (f_i - 1)}{N (N - 1)}
+```
+
 - For English text, the IC is typically around 0.068.
 - For random text, the IC is around 0.0385. (1/26)
 

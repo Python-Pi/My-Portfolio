@@ -179,7 +179,7 @@ const socialLinks = Object.entries(siteConfig.social)
                   </header>
                   <h3 class="blog-card-title">{paper.data.title}</h3>
                   <p class="blog-card-excerpt">{paper.data.description}</p>
-                  <span class="blog-card-cta">Read full article →</span>
+                  <span class="blog-card-cta">Read full article <span class="cta-arrow" aria-hidden="true">→</span></span>
                 </a>
               </article>
             );
@@ -229,7 +229,7 @@ const socialLinks = Object.entries(siteConfig.social)
                   </header>
                   <h3 class="blog-card-title">{blog.data.title}</h3>
                   <p class="blog-card-excerpt">{blog.data.description}</p>
-                  <span class="blog-card-cta">Read full article →</span>
+                  <span class="blog-card-cta">Read full article <span class="cta-arrow" aria-hidden="true">→</span></span>
                 </a>
               </article>
             );
@@ -271,7 +271,7 @@ const socialLinks = Object.entries(siteConfig.social)
                   </header>
                   <h3 class="mini-blog-title">{entry.data.title}</h3>
                   <p class="mini-blog-excerpt">{entry.data.description}</p>
-                  <span class="mini-blog-cta">Read mini blog →</span>
+                  <span class="mini-blog-cta">Read mini blog <span class="cta-arrow" aria-hidden="true">→</span></span>
                 </a>
               </article>
             );
@@ -321,7 +321,7 @@ const socialLinks = Object.entries(siteConfig.social)
                   </header>
                   <h3 class="blog-card-title">{book.data.title}</h3>
                   <p class="blog-card-excerpt">{book.data.description}</p>
-                  <span class="blog-card-cta">Read my notes →</span>
+                  <span class="blog-card-cta">Read my notes <span class="cta-arrow" aria-hidden="true">→</span></span>
                 </a>
               </article>
             );
@@ -661,6 +661,11 @@ const socialLinks = Object.entries(siteConfig.social)
       font-weight: 700;
       letter-spacing: -0.015em;
       color: var(--color-text);
+      transition: color 0.2s ease;
+    }
+
+    .blog-card-link:hover .blog-card-title {
+      color: var(--color-accent);
     }
 
     .blog-card-excerpt {
@@ -675,6 +680,15 @@ const socialLinks = Object.entries(siteConfig.social)
       font-size: 0.875rem;
       font-weight: 600;
       color: var(--color-accent);
+    }
+
+    .blog-card-cta .cta-arrow {
+      display: inline-block;
+      transition: transform 0.2s ease;
+    }
+
+    .blog-card-link:hover .blog-card-cta .cta-arrow {
+      transform: translateX(2px);
     }
 
     .mini-blogs-grid {
@@ -755,6 +769,11 @@ const socialLinks = Object.entries(siteConfig.social)
       font-weight: 600;
       color: var(--color-text);
       letter-spacing: -0.01em;
+      transition: color 0.2s ease;
+    }
+
+    .mini-blog-link:hover .mini-blog-title {
+      color: var(--color-accent);
     }
 
     .mini-blog-excerpt {
@@ -769,6 +788,15 @@ const socialLinks = Object.entries(siteConfig.social)
       font-size: 0.8125rem;
       font-weight: 600;
       color: var(--color-accent);
+    }
+
+    .mini-blog-cta .cta-arrow {
+      display: inline-block;
+      transition: transform 0.2s ease;
+    }
+
+    .mini-blog-link:hover .mini-blog-cta .cta-arrow {
+      transform: translateX(2px);
     }
 
     .section-title {

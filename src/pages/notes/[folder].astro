@@ -61,77 +61,127 @@ const entryHref = (collection: NotesEntryCollection, slug: string) => `${collect
   />
 
   <main class="folder-page">
-    <header class="folder-header">
-      <a class="back-link" href="/notes">← Back to notes</a>
-      <h1>{folder.title}</h1>
-      {folder.description && <p class="folder-description">{folder.description}</p>}
-      <PageStats text={`${folder.entries.length} ${folder.entries.length === 1 ? 'entry' : 'entries'}`} />
+    <header class="page-header">
+      <a class="back-link" href="/notes">
+        <span class="back-arrow" aria-hidden="true">←</span>
+        Back to notes
+      </a>
+      <p class="page-label">Folder</p>
+      <h1 class="page-title">{folder.title}</h1>
+      {folder.description && <p class="page-description">{folder.description}</p>}
+      <div class="page-meta">
+        <PageStats text={`${folder.entries.length} ${folder.entries.length === 1 ? 'entry' : 'entries'}`} />
+      </div>
     </header>
 
-    <section class="entries-section">
-      <ul class="entry-list">
-        {folder.entries.map((entry) => {
-          const enrichedEntry = entry as NotesEntryWithContent;
-          return (
-            <li class="entry-item">
-              <div class="entry-text">
+    {folder.entries.length > 0 ? (
+      <section class="entries-section" aria-label="Entries">
+        <ul class="entry-list" role="list">
+          {folder.entries.map((entry) => {
+            const enrichedEntry = entry as NotesEntryWithContent;
+            return (
+              <li class="entry-item">
                 <a class="entry-link" href={entryHref(enrichedEntry.collection, enrichedEntry.slug)}>
-                  {enrichedEntry.resolvedTitle}
+                  <span class="entry-link-title">{enrichedEntry.resolvedTitle}</span>
+                  {enrichedEntry.resolvedDescription && (
+                    <span class="entry-link-desc">{enrichedEntry.resolvedDescription}</span>
+                  )}
+                  <span class="entry-link-arrow" aria-hidden="true">→</span>
                 </a>
-                {enrichedEntry.resolvedDescription && (
-                  <p class="entry-summary">{enrichedEntry.resolvedDescription}</p>
-                )}
-              </div>
-              <span class="entry-badge">{collectionLabel(enrichedEntry.collection)}</span>
-            </li>
-          );
-        })}
-      </ul>
-    </section>
+                <span class="entry-badge">{collectionLabel(enrichedEntry.collection)}</span>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+    ) : (
+      <div class="empty-state">
+        <div class="empty-state-icon" aria-hidden="true">📄</div>
+        <p class="empty-state-title">No entries yet</p>
+        <p class="empty-state-desc">Entries in this folder will appear here.</p>
+      </div>
+    )}
   </main>
 
   <style>
     .folder-page {
-      max-width: 920px;
+      max-width: 960px;
       margin: 0 auto;
-      padding: 3rem 1.5rem 6rem;
+      padding: 3rem 1.5rem 8rem;
     }
 
-    .folder-header {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
+    .page-header {
       margin-bottom: 2.5rem;
     }
 
     .back-link {
-      font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: var(--font-size-sm);
+      font-weight: 500;
       text-decoration: none;
       color: var(--color-text-muted);
+      margin-bottom: 1.25rem;
+      transition: color var(--transition-fast), gap var(--transition-fast);
     }
 
     .back-link:hover {
-      color: var(--color-text-secondary);
+      color: var(--color-accent);
+      gap: 0.5rem;
     }
 
-    .folder-header h1 {
+    .back-arrow {
+      transition: transform var(--transition-fast);
+    }
+
+    .back-link:hover .back-arrow {
+      transform: translateX(-2px);
+    }
+
+    .page-label {
+      font-size: var(--font-size-sm);
+      font-weight: var(--font-weight-semibold);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--color-accent);
+      margin-bottom: 0.5rem;
+    }
+
+    .page-title {
       font-size: clamp(2rem, 5vw, 2.5rem);
-      margin: 0;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: var(--line-height-tight);
+      margin: 0 0 0.75rem 0;
+      color: var(--color-text);
     }
 
-    .folder-description {
-      margin: 0;
-      font-size: 1.05rem;
-      line-height: 1.7;
+    .page-description {
+      max-width: 540px;
+      font-size: var(--font-size-lg);
+      line-height: 1.65;
       color: var(--color-text-muted);
+      margin: 0 0 1rem 0;
+    }
+
+    .page-meta {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+      margin-top: 0.25rem;
     }
 
     .entries-section {
+      border-radius: var(--border-radius-lg);
+      background: var(--color-bg-secondary);
       border: 1px solid var(--color-border);
-      border-radius: 1rem;
-      background: var(--color-surface);
-      box-shadow: var(--shadow-sm);
-      padding: 2rem;
+      overflow: hidden;
+      transition: box-shadow var(--transition-base);
+      padding: 0.5rem 0;
+    }
+
+    .entries-section:focus-within {
+      box-shadow: var(--shadow-md);
     }
 
     .entry-list {
@@ -140,67 +190,140 @@ const entryHref = (collection: NotesEntryCollection, slug: string) => `${collect
       margin: 0;
       display: flex;
       flex-direction: column;
-      gap: 1.5rem;
+      gap: 0;
     }
 
     .entry-item {
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       justify-content: space-between;
       gap: 1rem;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--color-border-subtle);
+      position: relative;
     }
 
-    .entry-text {
-      flex: 1;
+    .entry-item:last-child {
+      border-bottom: none;
     }
 
     .entry-link {
-      font-weight: 600;
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
       text-decoration: none;
       color: var(--color-text);
-      transition: color 0.2s ease;
+      transition: color var(--transition-fast);
+      padding-right: 1.5rem;
+      position: relative;
     }
 
     .entry-link:hover {
+      color: var(--color-accent);
+    }
+
+    .entry-link:hover .entry-link-arrow {
+      opacity: 1;
+      transform: translateX(2px);
+    }
+
+    .entry-link-title {
+      font-weight: 500;
+      font-size: var(--font-size-base);
+    }
+
+    .entry-link-desc {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .entry-link:hover .entry-link-desc {
       color: var(--color-text-secondary);
     }
 
-    .entry-summary {
-      margin: 0.35rem 0 0;
-      color: var(--color-text-muted);
-      line-height: 1.6;
-      font-size: 0.95rem;
+    .entry-link-arrow {
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: var(--font-size-sm);
+      color: var(--color-accent);
+      opacity: 0;
+      transition: opacity var(--transition-fast), transform var(--transition-fast);
     }
 
     .entry-badge {
       flex-shrink: 0;
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      padding: 0.3rem 0.6rem;
+      letter-spacing: 0.06em;
+      padding: 0.25rem 0.5rem;
       border-radius: 999px;
-      background: var(--color-surface-elevated);
-      border: 1px solid var(--color-border);
+      background: var(--color-accent-muted);
+      color: var(--color-accent);
+      border: 1px solid transparent;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 2rem;
+      border: 1px dashed var(--color-border);
+      border-radius: var(--border-radius-lg);
+      background: var(--color-bg-secondary);
+    }
+
+    .empty-state-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      opacity: 0.6;
+    }
+
+    .empty-state-title {
+      font-size: var(--font-size-lg);
+      font-weight: 600;
+      color: var(--color-text);
+      margin-bottom: 0.5rem;
+    }
+
+    .empty-state-desc {
+      font-size: var(--font-size-sm);
       color: var(--color-text-muted);
+      margin: 0;
     }
 
     @media (max-width: 720px) {
       .folder-page {
-        padding: 2.5rem 1rem 5rem;
+        padding: 2.5rem 1rem 6rem;
       }
 
       .entries-section {
-        padding: 1.5rem;
+        margin: 0 -0.5rem;
+        border-radius: var(--border-radius-md);
       }
 
       .entry-item {
-        flex-direction: column;
-        align-items: flex-start;
+        padding: 1rem;
+        flex-wrap: wrap;
+      }
+
+      .entry-link {
+        padding-right: 1.25rem;
+      }
+
+      .entry-link-arrow {
+        right: 0;
       }
 
       .entry-badge {
-        margin-top: 0.35rem;
+        margin-left: auto;
       }
     }
   </style>

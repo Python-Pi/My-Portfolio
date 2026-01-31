@@ -39,6 +39,9 @@ const foldersWithDescriptions = (await Promise.all(
 
 const typedFolders = foldersWithDescriptions as NotesFolderWithContent[];
 
+const leftColumnFolders = typedFolders.filter((_, i) => i % 2 === 0);
+const rightColumnFolders = typedFolders.filter((_, i) => i % 2 === 1);
+
 const totalEntries = foldersWithDescriptions.reduce((count, folder) => count + folder.entries.length, 0);
 
 const collectionLabel = (collection: NotesEntryCollection) => (collection === 'blogs' ? 'Blog' : 'Mini Blog');
@@ -55,47 +58,107 @@ const entryHref = (collection: NotesEntryCollection, slug: string) => `${collect
 
   <main class="notes-page">
     <header class="page-header">
+      <p class="page-label">Notes</p>
       <h1 class="page-title">{config.heading}</h1>
       {config.intro && <p class="page-intro">{config.intro}</p>}
-      <PageStats text={`${typedFolders.length} folder${typedFolders.length === 1 ? '' : 's'} · ${totalEntries} ${totalEntries === 1 ? 'entry' : 'entries'}`} />
+      <div class="page-meta">
+        <PageStats text={`${typedFolders.length} folder${typedFolders.length === 1 ? '' : 's'} · ${totalEntries} ${totalEntries === 1 ? 'entry' : 'entries'}`} />
+      </div>
     </header>
 
     {typedFolders.length > 0 ? (
-      <div class="folders-grid">
-        {typedFolders.map((folder) => (
-          <section id={folder.id} class="folder-card">
-            <header class="folder-header">
-              <h2>{folder.title}</h2>
-              {folder.description && <p>{folder.description}</p>}
-            </header>
-            <ul class="entry-list">
-              {folder.entries.slice(0, MAX_ENTRIES_PER_FOLDER).map((entry) => {
-                const enrichedEntry = entry as NotesEntryWithContent;
-                return (
-                  <li class="entry-item">
-                    <div class="entry-text">
-                      <a class="entry-link" href={entryHref(enrichedEntry.collection, enrichedEntry.slug)}>
-                        {enrichedEntry.resolvedTitle}
-                      </a>
-                      {enrichedEntry.resolvedDescription && (
-                        <p class="entry-summary">{enrichedEntry.resolvedDescription}</p>
-                      )}
-                    </div>
-                    <span class="entry-badge">{collectionLabel(enrichedEntry.collection)}</span>
-                  </li>
-                );
-              })}
-            </ul>
-            {folder.entries.length > MAX_ENTRIES_PER_FOLDER && (
-              <a class="view-all-link" href={`/notes/${folder.id}`}>
-                View all {folder.entries.length} entries
-              </a>
-            )}
-          </section>
-        ))}
+      <div class="folders-container">
+        <div class="folders-grid">
+          <div class="folders-column">
+            {leftColumnFolders.map((folder, i) => (
+              <article id={folder.id} class="folder-card" style={`order: ${i * 2}`}>
+                <header class="folder-header">
+                  <h2 class="folder-title">
+                    <a class="folder-title-link" href={`/notes/${folder.id}`}>
+                      {folder.title}
+                    </a>
+                  </h2>
+                  {folder.description && (
+                    <p class="folder-description">{folder.description}</p>
+                  )}
+                </header>
+                <ul class="entry-list" role="list">
+                  {folder.entries.slice(0, MAX_ENTRIES_PER_FOLDER).map((entry) => {
+                    const enrichedEntry = entry as NotesEntryWithContent;
+                    return (
+                      <li class="entry-item">
+                        <a class="entry-link" href={entryHref(enrichedEntry.collection, enrichedEntry.slug)}>
+                          <span class="entry-link-title">{enrichedEntry.resolvedTitle}</span>
+                          {enrichedEntry.resolvedDescription && (
+                            <span class="entry-link-desc">{enrichedEntry.resolvedDescription}</span>
+                          )}
+                          <span class="entry-link-arrow" aria-hidden="true">→</span>
+                        </a>
+                        <span class="entry-badge">{collectionLabel(enrichedEntry.collection)}</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+                {folder.entries.length > MAX_ENTRIES_PER_FOLDER && (
+                  <footer class="folder-footer">
+                    <a class="view-all-link" href={`/notes/${folder.id}`}>
+                      View all {folder.entries.length} entries
+                      <span class="view-all-arrow" aria-hidden="true">→</span>
+                    </a>
+                  </footer>
+                )}
+              </article>
+            ))}
+          </div>
+          <div class="folders-column">
+            {rightColumnFolders.map((folder, i) => (
+              <article id={folder.id} class="folder-card" style={`order: ${i * 2 + 1}`}>
+                <header class="folder-header">
+                  <h2 class="folder-title">
+                    <a class="folder-title-link" href={`/notes/${folder.id}`}>
+                      {folder.title}
+                    </a>
+                  </h2>
+                  {folder.description && (
+                    <p class="folder-description">{folder.description}</p>
+                  )}
+                </header>
+                <ul class="entry-list" role="list">
+                  {folder.entries.slice(0, MAX_ENTRIES_PER_FOLDER).map((entry) => {
+                    const enrichedEntry = entry as NotesEntryWithContent;
+                    return (
+                      <li class="entry-item">
+                        <a class="entry-link" href={entryHref(enrichedEntry.collection, enrichedEntry.slug)}>
+                          <span class="entry-link-title">{enrichedEntry.resolvedTitle}</span>
+                          {enrichedEntry.resolvedDescription && (
+                            <span class="entry-link-desc">{enrichedEntry.resolvedDescription}</span>
+                          )}
+                          <span class="entry-link-arrow" aria-hidden="true">→</span>
+                        </a>
+                        <span class="entry-badge">{collectionLabel(enrichedEntry.collection)}</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+                {folder.entries.length > MAX_ENTRIES_PER_FOLDER && (
+                  <footer class="folder-footer">
+                    <a class="view-all-link" href={`/notes/${folder.id}`}>
+                      View all {folder.entries.length} entries
+                      <span class="view-all-arrow" aria-hidden="true">→</span>
+                    </a>
+                  </footer>
+                )}
+              </article>
+            ))}
+          </div>
+        </div>
       </div>
     ) : (
-      <p class="empty-state">No notes folders yet.</p>
+      <div class="empty-state">
+        <div class="empty-state-icon" aria-hidden="true">📁</div>
+        <p class="empty-state-title">No folders yet</p>
+        <p class="empty-state-desc">Notes folders will appear here once you add them.</p>
+      </div>
     )}
   </main>
 
@@ -107,116 +170,291 @@ const entryHref = (collection: NotesEntryCollection, slug: string) => `${collect
     }
 
     .page-header {
-      margin-bottom: 3rem;
+      margin-bottom: 3.5rem;
+    }
+
+    .page-label {
+      font-size: var(--font-size-sm);
+      font-weight: var(--font-weight-semibold);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--color-accent);
+      margin-bottom: 0.5rem;
     }
 
     .page-title {
-      font-size: clamp(2rem, 6vw, 2.75rem);
-      letter-spacing: -0.02em;
-      margin-bottom: 1rem;
+      font-size: clamp(2rem, 5vw, 2.5rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: var(--line-height-tight);
+      margin-bottom: 0.75rem;
+      color: var(--color-text);
     }
 
     .page-intro {
-      max-width: 640px;
-      font-size: 1.05rem;
-      line-height: 1.7;
+      max-width: 540px;
+      font-size: var(--font-size-lg);
+      line-height: 1.65;
       color: var(--color-text-muted);
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .page-meta {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+    }
+
+    .folders-container {
+      position: relative;
     }
 
     .folders-grid {
-      display: grid;
-      gap: 1.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .folders-column {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
     }
 
     .folder-card {
       padding: 1.75rem;
+      border-radius: var(--border-radius-lg);
+      background: var(--color-bg-secondary);
       border: 1px solid var(--color-border);
-      border-radius: 1rem;
-      background: var(--color-surface);
-      box-shadow: var(--shadow-sm);
+      transition: border-color var(--transition-base), box-shadow var(--transition-base);
     }
 
-    .folder-header h2 {
-      font-size: 1.25rem;
-      margin-bottom: 0.5rem;
+    .folder-card:hover {
+      border-color: var(--color-border);
+      box-shadow: var(--shadow-md);
     }
 
-    .folder-header p {
+    .folder-header {
+      margin-bottom: 1.25rem;
+    }
+
+    .folder-title {
+      font-size: var(--font-size-xl);
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      margin: 0 0 0.25rem 0;
+      line-height: 1.3;
+    }
+
+    .folder-title-link {
+      color: var(--color-text);
+      text-decoration: none;
+      transition: color var(--transition-fast);
+    }
+
+    .folder-title-link:hover {
+      color: var(--color-accent);
+    }
+
+    .folder-description {
+      font-size: var(--font-size-sm);
+      line-height: 1.5;
       color: var(--color-text-muted);
-      line-height: 1.6;
       margin: 0;
     }
 
     .entry-list {
       list-style: none;
       padding: 0;
-      margin: 1.5rem 0 0;
+      margin: 0;
       display: flex;
       flex-direction: column;
-      gap: 1.25rem;
+      gap: 0;
+      border-top: 1px solid var(--color-border-subtle);
     }
 
     .entry-item {
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       justify-content: space-between;
       gap: 1rem;
+      padding: 0.875rem 0;
+      border-bottom: 1px solid var(--color-border-subtle);
     }
 
-    .entry-text {
-      flex: 1;
+    .entry-item:last-child {
+      border-bottom: none;
     }
 
     .entry-link {
-      font-weight: 600;
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 0.75rem;
       text-decoration: none;
       color: var(--color-text);
-      transition: color 0.2s ease;
+      transition: color var(--transition-fast);
     }
 
     .entry-link:hover {
-      color: var(--color-text-secondary);
+      color: var(--color-accent);
+    }
+
+    .entry-link:hover .entry-link-arrow {
+      opacity: 1;
+      transform: translateX(2px);
+    }
+
+    .entry-link-title {
+      flex: 1;
+      min-width: 0;
+      font-weight: 500;
+      font-size: var(--font-size-base);
+    }
+
+    .entry-link-desc {
+      display: none;
+    }
+
+    @media (min-width: 540px) {
+      .entry-link {
+        position: relative;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.2rem;
+        padding-right: 1.5rem;
+      }
+
+      .entry-link-desc {
+        display: -webkit-box;
+        font-size: var(--font-size-sm);
+        color: var(--color-text-muted);
+        line-height: 1.4;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      .entry-link:hover .entry-link-desc {
+        color: var(--color-text-secondary);
+      }
+
+      .entry-link-arrow {
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+
+      .entry-link:hover .entry-link-arrow {
+        transform: translateY(-50%) translateX(2px);
+      }
+    }
+
+    .entry-link-arrow {
+      flex-shrink: 0;
+      font-size: var(--font-size-sm);
+      color: var(--color-accent);
+      opacity: 0;
+      transition: opacity var(--transition-fast), transform var(--transition-fast);
     }
 
     .entry-badge {
       flex-shrink: 0;
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      padding: 0.3rem 0.6rem;
+      letter-spacing: 0.06em;
+      padding: 0.25rem 0.5rem;
       border-radius: 999px;
-      background: var(--color-surface-elevated);
-      border: 1px solid var(--color-border);
-      color: var(--color-text-muted);
+      background: var(--color-accent-muted);
+      color: var(--color-accent);
+      border: 1px solid transparent;
+    }
+
+    .folder-footer {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--color-border-subtle);
     }
 
     .view-all-link {
       display: inline-flex;
       align-items: center;
-      margin-top: 1.25rem;
-      font-weight: 600;
-      font-size: 0.9rem;
+      gap: 0.35rem;
+      font-weight: 500;
+      font-size: var(--font-size-sm);
       color: var(--color-text-secondary);
       text-decoration: none;
+      transition: color var(--transition-fast), gap var(--transition-fast);
     }
 
     .view-all-link:hover {
-      color: var(--color-text);
+      color: var(--color-accent);
+      gap: 0.5rem;
+    }
+
+    .view-all-arrow {
+      font-size: 0.9em;
+      transition: transform var(--transition-fast);
+    }
+
+    .view-all-link:hover .view-all-arrow {
+      transform: translateX(2px);
     }
 
     .empty-state {
-      padding: 2rem;
       text-align: center;
-      color: var(--color-text-muted);
+      padding: 3rem 2rem;
       border: 1px dashed var(--color-border);
-      border-radius: 1rem;
+      border-radius: var(--border-radius-lg);
+      background: var(--color-bg-secondary);
     }
 
-    @media (max-width: 720px) {
+    .empty-state-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      opacity: 0.6;
+    }
+
+    .empty-state-title {
+      font-size: var(--font-size-lg);
+      font-weight: 600;
+      color: var(--color-text);
+      margin-bottom: 0.5rem;
+    }
+
+    .empty-state-desc {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+      margin: 0;
+    }
+
+    @media (min-width: 720px) {
+      .folders-grid {
+        flex-direction: row;
+        align-items: stretch;
+        gap: 1.5rem;
+      }
+
+      .folders-column {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .folders-column .folder-card {
+        order: unset;
+      }
+    }
+
+    @media (max-width: 719px) {
       .notes-page {
         padding: 2.5rem 1rem 6rem;
+      }
+
+      .folders-column {
+        display: contents;
       }
 
       .folder-card {
@@ -224,12 +462,11 @@ const entryHref = (collection: NotesEntryCollection, slug: string) => `${collect
       }
 
       .entry-item {
-        flex-direction: column;
-        align-items: flex-start;
+        flex-wrap: wrap;
       }
 
       .entry-badge {
-        margin-top: 0.35rem;
+        margin-left: auto;
       }
     }
   </style>
