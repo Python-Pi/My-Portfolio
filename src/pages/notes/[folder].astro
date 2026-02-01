@@ -12,6 +12,8 @@ export const prerender = true;
 type NotesEntryWithContent = NotesEntry & {
   resolvedTitle: string;
   resolvedDescription?: string;
+  publishDate?: Date;
+  tags?: string[];
 };
 type NotesFolderWithContent = NotesFolder & { entries: NotesEntryWithContent[] };
 
@@ -22,21 +24,31 @@ export async function getStaticPaths() {
       props: {
         folder: {
           ...folder,
-          entries: await Promise.all(
-            folder.entries.map(async (entry) => {
-              const contentEntry = await getEntry(entry.collection, entry.slug);
-              const slugSegment = entry.slug.split('/').pop() ?? entry.slug;
-              const fallbackTitle = slugSegment
-                .replace(/-/g, ' ')
-                .replace(/\b\w/g, (char) => char.toUpperCase());
-              const resolvedTitle = contentEntry?.data.title ?? fallbackTitle;
-              return {
-                ...entry,
-                resolvedTitle,
-                resolvedDescription: contentEntry?.data.description ?? entry.summary ?? '',
-              } satisfies NotesEntryWithContent;
-            })
-          ),
+          entries: (
+            await Promise.all(
+              folder.entries.map(async (entry) => {
+                const contentEntry = await getEntry(entry.collection, entry.slug);
+                const slugSegment = entry.slug.split('/').pop() ?? entry.slug;
+                const fallbackTitle = slugSegment
+                  .replace(/-/g, ' ')
+                  .replace(/\b\w/g, (char) => char.toUpperCase());
+                const resolvedTitle = contentEntry?.data.title ?? fallbackTitle;
+                const publishDate = contentEntry?.data.publishDate as Date | undefined;
+                const tags = (contentEntry?.data as { tags?: string[] }).tags;
+                return {
+                  ...entry,
+                  resolvedTitle,
+                  resolvedDescription: contentEntry?.data.description ?? entry.summary ?? '',
+                  publishDate,
+                  tags,
+                } satisfies NotesEntryWithContent;
+              })
+            )
+          ).sort((a, b) => {
+            const dateA = a.publishDate ? a.publishDate.getTime() : 0;
+            const dateB = b.publishDate ? b.publishDate.getTime() : 0;
+            return dateB - dateA;
+          }),
         } satisfies NotesFolderWithContent,
       },
     }))
@@ -79,9 +91,31 @@ const entryHref = (collection: NotesEntryCollection, slug: string) => `${collect
         <ul class="entry-list" role="list">
           {folder.entries.map((entry) => {
             const enrichedEntry = entry as NotesEntryWithContent;
+            const date = enrichedEntry.publishDate;
+            const formattedDate = date
+              ? date.toLocaleDateString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric',
+                })
+              : null;
+            const tags = enrichedEntry.tags ?? [];
             return (
               <li class="entry-item">
                 <a class="entry-link" href={entryHref(enrichedEntry.collection, enrichedEntry.slug)}>
+                  <div class="entry-meta">
+                    {formattedDate && <span class="entry-date">{formattedDate}</span>}
+                    {tags.length > 0 && (
+                      <div class="entry-tags">
+                        {tags.slice(0, 3).map((tag) => (
+                          <span class="entry-tag">{tag}</span>
+                        ))}
+                        {tags.length > 3 && (
+                          <span class="entry-tag more">+{tags.length - 3}</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
                   <span class="entry-link-title">{enrichedEntry.resolvedTitle}</span>
                   {enrichedEntry.resolvedDescription && (
                     <span class="entry-link-desc">{enrichedEntry.resolvedDescription}</span>
@@ -232,6 +266,39 @@ const entryHref = (collection: NotesEntryCollection, slug: string) => `${collect
     .entry-link-title {
       font-weight: 500;
       font-size: var(--font-size-base);
+    }
+
+    .entry-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: var(--font-size-xs);
+      color: var(--color-text-muted);
+      margin-bottom: 0.15rem;
+    }
+
+    .entry-date {
+      white-space: nowrap;
+    }
+
+    .entry-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+
+    .entry-tag {
+      padding: 0.1rem 0.45rem;
+      border-radius: 999px;
+      background: var(--color-bg-elevated);
+      border: 1px solid var(--color-border-subtle);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .entry-tag.more {
+      opacity: 0.8;
     }
 
     .entry-link-desc {

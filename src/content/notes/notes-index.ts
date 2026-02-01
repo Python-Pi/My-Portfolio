@@ -57,6 +57,10 @@ export const notesIndex: NotesFolder[] = [
         slug: 'what-is-collapse-in-self-supervised-learning',
         collection: 'mini-blogs',
       },
+      {
+        slug: 'discriminative-generative-models',
+        collection: 'mini-blogs',
+      },
     ],
   },
   {
@@ -66,7 +70,7 @@ export const notesIndex: NotesFolder[] = [
     entries: [
       {
         slug: 'math-distributions',
-        collection: 'mini-blogs',
+        collection: 'blogs',
       }
     ],
   }

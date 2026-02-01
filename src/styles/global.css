@@ -202,3 +202,9 @@ pre code {
   white-space: nowrap;
   border-width: 0;
 }
+
+.force-light-svg {
+  background: white;
+  filter: none !important;
+  color-scheme: light;
+}

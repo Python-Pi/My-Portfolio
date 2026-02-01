@@ -1,0 +1,76 @@
+---
+title: "Discriminative vs Generative Models"
+description: "Understanding the difference between discriminative and generative models in machine learning"
+publishDate: 2026-02-1
+tags:
+  - "Machine Learning"
+draft: false
+---
+
+## What is the core question a model need to answer?
+
+Machine Learning models can be broadly grouped into two main categories based on the type of question they aim to answer:
+- **Discriminative Models**: Give an input $x$, what is the most likely output $y$?
+- **Generative Models**: How were the data $x$ and labels $y$ generated together?
+
+The difference shapes how these models are trained and used in practice.
+
+
+## Discriminative Models
+Discriminative models directly model the conditional probability.
+```math
+p(y|x)
+```
+A common formulation is:
+```math
+p(y|x) = P(y | f(x, w))
+```
+where 
+- $f(x, w)$ is a function (like a linear model, neural network etc.)
+- $w$ are learnable parameters.
+
+Discriminative models focus on only what matters for the prediction. They usually try to learn
+- Decision boundaries between classes
+- Direct mappings from inputs to outputs
+
+> Think of a discriminative model as learning to draw the best possible boundary between classes
+
+### Pros and Cons of Discriminative Models
+**Pros:**
+- Often achieve higher accuracy on classification tasks
+- Fewer assumptions about data distribution
+
+**Cons:**
+- Rely on large amounts of labeled data
+- Do not model the underlying data distribution
+- Cannot generate new data samples
+
+## Generative Models
+Generative models aim to model/learn the joint probability distribution of inputs and outputs.
+```math
+p(x, y)
+```
+
+Using this, the model can derive the conditional probability using Bayes' theorem:
+```math
+p(y|x) = \frac{p(x, y)}{p(x)}
+```
+
+where $p(x, y)$ is the probability of $X=x$ and $Y=y$ happening together. Mathematically, it can be decomposed as:
+```math
+p(x, y) = p(y|x) \cdot p(x) = p(x|y) \cdot p(y)
+```
+
+Generative models attempt to model the data-generating process itself. They learn to capture the underlying distribution of the data.
+
+### Pros and Cons of Generative Models
+**Pros:**
+- Works well with smaller amounts of labeled data
+- Can generate new data samples
+- Useful for unsupervised and semi-supervised learning
+- Can handle missing data better
+
+**Cons:**
+- Often more complex and computationally intensive
+- May require strong assumptions about data distribution
+- Sometimes less accurate for classification tasks compared to discriminative models

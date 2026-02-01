@@ -51,7 +51,7 @@ export const pagesConfig = {
     title: 'Books',
     description: 'Reading notes and lessons from the titles shaping my thinking',
     heading: 'Books',
-    intro: 'Reading notes and lessons from the titles shaping my thinking.',
+    intro: 'Reading notes from the books I\'m exploring',
   },
 
   /**

@@ -1,0 +1,173 @@
+---
+title: "Probability Distributions"
+description: "List of common probability distributions used in statistics and machine learning"
+publishDate: 2026-02-1
+tags:
+  - "Math"
+  - "Probability"
+  - "Machine Learning"
+draft: false
+status: "ongoing"
+---
+
+## Continuous Distributions
+
+### Uniform Distribution
+
+The uniform distribution is a continuous probability distribution where all outcomes are equally likely within a specified range \([a, b]\). 
+The probability density function (PDF) is given by:
+```math 
+f(x) =
+\begin{cases}
+\dfrac{1}{b-a} & a \le x \le b \\
+0              & \text{otherwise}
+\end{cases}
+```
+
+Visually, the uniform distribution can be represented as:
+
+<img
+  src="/distributions/uniform.svg"
+  alt="Uniform Distribution"
+  style={{ width: "400px", maxWidth: "100%", margin: "0 auto" }}
+  className="force-light-svg"
+/>
+
+| Property      | Value |
+|---------      |-------|
+| Support       | $ a \le x \le b $ |
+| Mean          | $ \dfrac{a + b}{2} $ |
+| Mode          | Any $ x \in [a,b] $ |
+| Variance      | $ \dfrac{(b - a)^2}{12} $ |
+
+**Intuition:** Every interval of the same length within the range \([a, b]\) has an equal probability of occurrence. 
+
+For more, details, see the [Wikipedia page on Uniform Distribution](https://en.wikipedia.org/wiki/Uniform_distribution_(continuous)).
+
+### Gaussian/Normal Distribution (Univariate)
+
+The Gaussian distribution, also known as the normal distribution, is a continuous probability distribution characterized by its bell-shaped curve. 
+It is defined by two parameters: the mean ($\mu$) and the standard deviation ($\sigma$). The probability density function (PDF) is given by:
+
+```math
+f(x| \mu, \sigma) = \dfrac{1}{\sigma \sqrt{2 \pi}} \cdot e^{-\dfrac{(x - \mu)^2}{2 \sigma^2}} \quad \text{for } -\infty < x < \infty
+```
+
+Visually, the Gaussian distribution can be represented as:
+
+<img
+  src="/distributions/normal.svg"
+  alt="Normal Distribution"
+  style={{ width: "500px", maxWidth: "100%", margin: "0 auto" }}
+  className="force-light-svg"
+/>
+
+| Property      | Value |
+|---------      |-------|
+| Support       | $ -\infty < x < \infty $ |
+| Mean          | $ \mu $ |
+| Mode          | $ \mu $ |
+| Variance      | $ \sigma^2 $ |
+| Precision     | $ \dfrac{1}{\sigma^2} $ |
+
+**Intuition:** The Gaussian distribution models many natural phenomena, such as heights, test scores, and measurement errors, where values tend to cluster around the mean.
+
+### Gaussian/Normal Distribution (Multivariate)
+
+The multivariate normal distribution is a generalization of the univariate normal distribution to multiple dimensions. 
+It is defined by a mean vector ($\mu$) and a covariance matrix ($\Sigma$). The probability density function (PDF) is given by:
+
+```math
+f(x| \mu, \Sigma) = \dfrac{1}{(2 \pi)^{k/2} |\Sigma|^{1/2}} \cdot e^{-\dfrac{1}{2} (x - \mu)^T \Sigma^{-1} (x - \mu)} \quad \text{for } x \in \mathbb{R}^k
+```
+
+where \( k \) is the number of dimensions.
+
+| Property      | Value |
+|---------      |-------|
+| Support       | $ x \in \mathbb{R}^k $ |
+| Mean          | $ \mu $ |
+| Mode          | $ \mu $ |
+| Covariance    | $ \Sigma $ |
+
+
+
+### Beta Distribution
+
+Beta distribution is a continuous probability distribution defined on the interval $[0, 1]$ in terms of 
+two shape parameters, $\alpha$ and $\beta$. The probability density function (PDF) is given by:
+
+```math 
+f(x| \alpha, \beta) = \dfrac{\Gamma(\alpha + \beta)}{\Gamma(\alpha) \Gamma(\beta)} x^{\alpha - 1} (1 - x)^{\beta - 1} \quad \text{for } 0 \le x \le 1
+```
+
+where $\Gamma$ is the gamma function defined as:
+
+```math
+\Gamma(\alpha) = \int_0^{\infty} t^{\alpha-1} e^{-t} dt
+``` 
+
+
+Visually, the beta distribution can be represented as:
+
+<img
+  src="/distributions/beta.svg"
+  alt="Beta Distribution"
+  style={{ width: "500px", maxWidth: "100%", margin: "0 auto" }}
+  className="force-light-svg"
+/>
+
+| Property      | Value |
+|---------      |-------|
+| Support       | $ 0 \le x \le 1 $ |
+| Mean          | $$ \dfrac{\alpha}{\alpha + \beta} $$ |
+| Mode          | $ \dfrac{\alpha - 1}{\alpha + \beta - 2} $ (for $\alpha, \beta > 1$) |
+| Variance      | $ \dfrac{\alpha \beta}{(\alpha + \beta)^2 (\alpha + \beta + 1)} $ |
+
+**Intuition:**  The Beta function measures how two quantities “share” a fixed total. Think of it as a continuous generalization of counting ways to split something.
+
+### Dirichlet Distribution
+
+The Dirichlet distribution is a multivariate generalization of the Beta distribution. It is defined over a simplex and is parameterized by a vector of positive reals $\alpha = (\alpha_1, \alpha_2, \ldots, \alpha_k)$. The probability density function (PDF) is given by:
+
+```math
+f(x_1, x_2, \ldots, x_N | \pi) = \dfrac{\Gamma\left(\sum_{i=1}^{N} \pi_i\right)}{\prod_{i=1}^{N} \Gamma(\pi_i)} \prod_{i=1}^{N} x_i^{\pi_i - 1} \quad \text{for } x_i \ge 0, \sum_{i=1}^{N} x_i = 1
+```
+where $\Gamma$ is the gamma function defined as:
+
+```math
+\Gamma(\alpha) = \int_0^{\infty} t^{\alpha-1} e^{-t} dt
+``` 
+
+Visually, the Dirichlet distribution can be represented as:
+
+<img
+  src="/distributions/dirichlet.svg"
+  alt="Dirichlet Distribution"
+  style={{ width: "800px", maxWidth: "100%", margin: "0 auto" }}
+  className="force-light-svg"
+/>
+
+| Property      | Value |
+|---------      |-------|
+| Support       | $ x_i \ge 0, \sum_{i=1}^{N} x_i = 1 $ |
+| Mean          | $ \dfrac{\pi_i}{\sum_{j=1}^{N} \pi_j} $ |
+| Mode          | $ \dfrac{\pi_i - 1}{\sum_{j=1}^{N} \pi_j - N} $ (for $\pi_i > 1$) |
+| Covariance    | $ \dfrac{\pi_i (\sum_{j=1}^{N} \pi_j - \pi_i)}{(\sum_{j=1}^{N} \pi_j)^2 (\sum_{j=1}^{N} \pi_j + 1)} $  |
+
+**Intuition:** 
+The Dirichlet distribution intuitively models the same thing as the Beta distribution, but for multiple categories instead of just two.
+
+### Gamma Distribution
+
+## Discrete Distributions
+
+### Bernoulli Distribution
+
+### Multinoulli Distribution
+
+### Binomial Distribution
+
+### Poisson Distribution
+
+### Multinomial Distribution

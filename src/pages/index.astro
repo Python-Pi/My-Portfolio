@@ -34,7 +34,7 @@ const recentBlogs = allBlogs
 const allMiniBlogs = await getCollection('mini-blogs');
 const recentMiniBlogs = allMiniBlogs
   .sort((a, b) => b.data.publishDate.getTime() - a.data.publishDate.getTime())
-  .slice(0, 3);
+  .slice(0, 2);
 
 const allLiteratureReviews = await getCollection('literature-review');
 const recentLiteratureReviews = allLiteratureReviews

@@ -8,32 +8,41 @@ import type { NotesEntryCollection, NotesEntry, NotesFolder } from '../../conten
 import { getEntry } from 'astro:content';
 
 const config = pagesConfig.notes;
-const MAX_ENTRIES_PER_FOLDER = 3;
+const MAX_ENTRIES_PER_FOLDER = 2;
 
 type NotesEntryWithContent = NotesEntry & {
   resolvedTitle: string;
   resolvedDescription?: string;
+  publishDate?: Date;
 };
 type NotesFolderWithContent = NotesFolder & { entries: NotesEntryWithContent[] };
 
 const foldersWithDescriptions = (await Promise.all(
   notesIndex.map(async (folder) => ({
     ...folder,
-    entries: await Promise.all(
-      folder.entries.map(async (entry) => {
-        const contentEntry = await getEntry(entry.collection, entry.slug);
-        const slugSegment = entry.slug.split('/').pop() ?? entry.slug;
-        const fallbackTitle = slugSegment
-          .replace(/-/g, ' ')
-          .replace(/\b\w/g, (char) => char.toUpperCase());
-        const resolvedTitle = contentEntry?.data.title ?? fallbackTitle;
-        return {
-          ...entry,
-          resolvedTitle,
-          resolvedDescription: contentEntry?.data.description ?? entry.summary ?? '',
-        } satisfies NotesEntryWithContent;
-      })
-    ),
+    entries: (
+      await Promise.all(
+        folder.entries.map(async (entry) => {
+          const contentEntry = await getEntry(entry.collection, entry.slug);
+          const slugSegment = entry.slug.split('/').pop() ?? entry.slug;
+          const fallbackTitle = slugSegment
+            .replace(/-/g, ' ')
+            .replace(/\b\w/g, (char) => char.toUpperCase());
+          const resolvedTitle = contentEntry?.data.title ?? fallbackTitle;
+          const publishDate = contentEntry?.data.publishDate as Date | undefined;
+          return {
+            ...entry,
+            resolvedTitle,
+            resolvedDescription: contentEntry?.data.description ?? entry.summary ?? '',
+            publishDate,
+          } satisfies NotesEntryWithContent;
+        })
+      )
+    ).sort((a, b) => {
+      const dateA = a.publishDate ? a.publishDate.getTime() : 0;
+      const dateB = b.publishDate ? b.publishDate.getTime() : 0;
+      return dateB - dateA;
+    }),
   }))
 )) as NotesFolderWithContent[];
 
