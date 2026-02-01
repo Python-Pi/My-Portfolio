@@ -25,6 +25,7 @@ import ForwardLink from '../components/ForwardLink.astro';
 import { getCollection } from 'astro:content';
 import { siteConfig } from '../config';
 import { Icon } from 'astro-icon/components';
+import { calculateReadingTime } from '../utils/readingTime';
 
 const allBlogs = await getCollection('blogs');
 const recentBlogs = allBlogs
@@ -73,6 +74,45 @@ const socialLinks = Object.entries(siteConfig.social)
     label: platform.charAt(0).toUpperCase() + platform.slice(1),
     url,
   }));
+
+// Site stats for footer card
+const allPosts = [
+  ...allBlogs,
+  ...allMiniBlogs,
+  ...allLiteratureReviews,
+  ...allBooks,
+];
+const totalPosts = allPosts.length;
+
+const lastUpdatedDate = allPosts.length > 0
+  ? new Date(
+      Math.max(
+        ...allPosts.map((p) =>
+          (p.data.updatedDate ?? p.data.publishDate).getTime()
+        )
+      )
+    )
+  : null;
+const lastUpdated = lastUpdatedDate
+  ? lastUpdatedDate.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    })
+  : '—';
+
+const totalReadingMinutes = allPosts.reduce(
+  (sum, p) => sum + calculateReadingTime((p as { body?: string }).body ?? ''),
+  0
+);
+const totalReadingDisplay =
+  totalReadingMinutes >= 60
+    ? `${Math.floor(totalReadingMinutes / 60)} hr ${totalReadingMinutes % 60} min`
+    : `${totalReadingMinutes} min`;
+
+const uniqueTagCount = new Set(
+  allPosts.flatMap((post) => post.data.tags ?? [])
+).size;
 ---
 
 <BaseLayout>
@@ -142,58 +182,60 @@ const socialLinks = Object.entries(siteConfig.social)
       </div>
     </section>
 
-    <!-- Literature Review -->
-    <section class="recent-literature-review">
-      <div class="section-header">
-        <h2>Literature Reviews</h2>
-        <ForwardLink href="/literature-review" text="View all" variant="muted" />
-      </div>
-      
-      {recentLiteratureReviews.length > 0 ? (
-        <div class="blog-card-list">
-          {recentLiteratureReviews.map((paper) => {
-            const date = paper.data.publishDate;
-            const formattedDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-            const tags = paper.data.tags || [];
-            const statusKey = paper.data.status;
-            const status = formatStatus(statusKey);
-            const statusClass = getStatusClass(statusKey);
-            return (
-              <article class="blog-card">
-                <a href={`/literature-review/${paper.id}`} class="blog-card-link">
-                  <header class="blog-card-header">
-                    <div class="blog-card-meta">
-                      <span class="blog-card-date">{formattedDate}</span>
-                      {status && statusClass && (
-                        <span class={statusClass}>{status}</span>
-                      )}
-                    </div>
-                    {tags.length > 0 && (
-                      <div class="blog-card-tags">
-                        {tags.slice(0, 4).map((tag) => (
-                          <span class="blog-card-tag">{tag}</span>
-                        ))}
-                        {tags.length > 4 && <span class="blog-card-tag more">+{tags.length - 4}</span>}
-                      </div>
-                    )}
-                  </header>
-                  <h3 class="blog-card-title">{paper.data.title}</h3>
-                  <p class="blog-card-excerpt">{paper.data.description}</p>
-                  <span class="blog-card-cta">Read full article <span class="cta-arrow" aria-hidden="true">→</span></span>
-                </a>
-              </article>
-            );
-          })}
+    <!-- Content sections: Literature Review → CTA -->
+    <div class="content-sections">
+      <!-- Literature Review -->
+      <section class="content-section recent-literature-review">
+        <div class="section-header">
+          <h2>Literature Reviews</h2>
+          <ForwardLink href="/literature-review" text="View all" variant="muted" />
         </div>
-      ) : (
-        <p class="no-blogs">No literature reviews documented yet.</p>
-      )}
-    </section> 
 
-    <hr>
+        {recentLiteratureReviews.length > 0 ? (
+          <div class="blog-card-list">
+            {recentLiteratureReviews.map((paper) => {
+              const date = paper.data.publishDate;
+              const formattedDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+              const tags = paper.data.tags || [];
+              const statusKey = paper.data.status;
+              const status = formatStatus(statusKey);
+              const statusClass = getStatusClass(statusKey);
+              return (
+                <article class="blog-card">
+                  <a href={`/literature-review/${paper.id}`} class="blog-card-link">
+                    <header class="blog-card-header">
+                      <div class="blog-card-meta">
+                        <span class="blog-card-date">{formattedDate}</span>
+                        {status && statusClass && (
+                          <span class={statusClass}>{status}</span>
+                        )}
+                      </div>
+                      {tags.length > 0 && (
+                        <div class="blog-card-tags">
+                          {tags.slice(0, 4).map((tag) => (
+                            <span class="blog-card-tag">{tag}</span>
+                          ))}
+                          {tags.length > 4 && <span class="blog-card-tag more">+{tags.length - 4}</span>}
+                        </div>
+                      )}
+                    </header>
+                    <h3 class="blog-card-title">{paper.data.title}</h3>
+                    <p class="blog-card-excerpt">{paper.data.description}</p>
+                    <span class="blog-card-cta">Read full article <span class="cta-arrow" aria-hidden="true">→</span></span>
+                  </a>
+                </article>
+              );
+            })}
+          </div>
+        ) : (
+          <p class="no-blogs">No literature reviews documented yet.</p>
+        )}
+      </section>
 
-    <!-- Blogs -->
-    <section class="recent-blogs">
+      <hr class="section-divider" />
+
+      <!-- Blogs -->
+      <section class="content-section recent-blogs">
       <div class="section-header">
         <h2>Recent Blogs</h2>
         <ForwardLink href="/blogs" text="View all" variant="muted" />
@@ -238,12 +280,12 @@ const socialLinks = Object.entries(siteConfig.social)
       ) : (
         <p class="no-blogs">No blogs documented yet.</p>
       )}
-    </section> 
+      </section>
 
-    <hr>
+      <hr class="section-divider" />
 
-    <!-- Mini Blogs -->
-    <section class="recent-mini-blogs">
+      <!-- Mini Blogs -->
+      <section class="content-section recent-mini-blogs">
       <div class="section-header">
         <h2>Recent Mini Blogs</h2>
         <ForwardLink href="/mini-blogs" text="View all" variant="muted" />
@@ -280,12 +322,12 @@ const socialLinks = Object.entries(siteConfig.social)
       ) : (
         <p class="no-blogs">No mini blogs documented yet.</p>
       )}
-    </section>
+      </section>
 
-    <hr>
+      <hr class="section-divider" />
 
-    <!-- Books -->
-    <section class="recent-books">
+      <!-- Books -->
+      <section class="content-section recent-books">
       <div class="section-header">
         <h2>Books I'm Studying</h2>
         <ForwardLink href="/books" text="View all" variant="muted" />
@@ -330,25 +372,39 @@ const socialLinks = Object.entries(siteConfig.social)
       ) : (
         <p class="no-blogs">No books documented yet.</p>
       )}
-    </section>
+      </section>
 
-    <hr>
+      <!-- Site stats footer card -->
+      <section class="site-stats" aria-label="Site statistics">
+        <div class="site-stats-card">
+          <span class="site-stats-item">
+            <span class="site-stats-value">{totalPosts}</span>
+            <span class="site-stats-label">posts</span>
+          </span>
 
-    <!-- CTA -->
-    <section class="cta">
-      <h2></h2>
-      <p>
-        I'm always excited to talk about Software developement, Machine Learning, and AI.
-        I also love discussing about economics, geopolitics, and philosophy. Other than that I love anime a lot!
-        If any of these topics interest you, feel free to reach out!
-      </p>
-      <div class="cta-buttons"></a>
-         <a href="/blogs" class="btn-primary">View My Blogs</a>
-        <a href="/about" class="btn-secondary">About me</a>
-      </div>
-    </section>
+          <span class="site-stats-divider" aria-hidden="true">·</span>
 
+          <span class="site-stats-item">
+            <span class="site-stats-value">{uniqueTagCount}</span>
+            <span class="site-stats-label">topics</span>
+          </span>
 
+          <span class="site-stats-divider" aria-hidden="true">·</span>
+
+          <span class="site-stats-item">
+            <span class="site-stats-value">{totalReadingDisplay}</span>
+            <span class="site-stats-label">reading time</span>
+          </span>
+
+          <span class="site-stats-divider" aria-hidden="true">·</span>
+          
+          <span class="site-stats-item">
+            <span class="site-stats-value">{lastUpdated}</span>
+            <span class="site-stats-label">last updated</span>
+          </span>
+        </div>
+      </section>
+    </div>
   </main>
 
   <style>
@@ -550,12 +606,65 @@ const socialLinks = Object.entries(siteConfig.social)
       color: var(--color-text);
     }
 
-    .recent-blogs {
-      margin-bottom: 5rem;
+    /* Content sections: Literature Review through CTA */
+    .content-sections {
+      padding-top: 0.5rem;
     }
 
-    .recent-mini-blogs {
-      margin-bottom: 5rem;
+    .content-section {
+      padding: var(--space-3xl) 0;
+    }
+
+    .content-section:first-of-type {
+      padding-top: 0;
+    }
+
+    .section-divider {
+      border: none;
+      height: 1px;
+      background: var(--color-border);
+      margin: 0;
+      opacity: 0.8;
+    }
+
+    .section-heading {
+      font-size: clamp(1.25rem, 1.1rem + 0.4vw, 1.5rem);
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: var(--color-text);
+      margin: 0;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: var(--space-xl);
+    }
+
+    .blog-card-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+      gap: var(--space-xl);
+    }
+
+    .blog-card {
+      background: var(--color-bg-secondary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--border-radius-lg);
+      overflow: hidden;
+      transition: border-color var(--transition-base), transform var(--transition-base), box-shadow var(--transition-base);
+    }
+
+    .blog-card:hover,
+    .blog-card:focus-within {
+      border-color: var(--color-text-muted);
+      box-shadow: var(--shadow-md);
+    }
+
+    .blog-card:focus-within {
+      transform: translateY(-2px);
     }
 
     .blog-card-date {
@@ -597,17 +706,11 @@ const socialLinks = Object.entries(siteConfig.social)
       background: rgba(115, 115, 115, 0.15);
       color: var(--color-text-muted);
     }
-    .blog-card:focus-within {
-      border-color: var(--color-text-muted);
-      transform: translateY(-6px);
-      box-shadow: var(--shadow-md);
-    }
-
     .blog-card-link {
       display: flex;
       flex-direction: column;
-      gap: 1rem;
-      padding: 2rem;
+      gap: var(--space-md);
+      padding: var(--space-xl);
       height: 100%;
       color: inherit;
       text-decoration: none;
@@ -805,18 +908,6 @@ const socialLinks = Object.entries(siteConfig.social)
       letter-spacing: -0.015em;
     }
 
-    .section-header {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      margin-bottom: 2rem;
-    }
-
-    .section-header h2 {
-      /* font-size: 1.25rem; */
-      /* font-weight: 600; */
-      /* letter-spacing: -0.01em; */
-    }
 
     .blogs-list {
       display: flex;
@@ -874,6 +965,48 @@ const socialLinks = Object.entries(siteConfig.social)
       padding: 1.5rem 0;
     }
 
+    /* Site stats footer card */
+    .site-stats {
+      padding: var(--space-xl) 0 var(--space-2xl);
+    }
+
+    .site-stats-card {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: center;
+      gap: 0.5rem 0.75rem;
+      padding: var(--space-md) var(--space-lg);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+      background: var(--color-bg-secondary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--border-radius-md);
+      max-width: fit-content;
+      margin: 0 auto;
+    }
+
+    .site-stats-item {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 0.35rem;
+    }
+
+    .site-stats-value {
+      font-weight: 600;
+      color: var(--color-text-secondary);
+    }
+
+    .site-stats-label {
+      text-transform: lowercase;
+    }
+
+    .site-stats-divider {
+      color: var(--color-border);
+      font-weight: 400;
+      user-select: none;
+    }
+
     .thinking {
       margin-bottom: 5rem;
     }
@@ -891,32 +1024,6 @@ const socialLinks = Object.entries(siteConfig.social)
       color: var(--color-text-secondary);
       max-width: 680px;
     }
-
-    .cta {
-      /* padding: -5rem 0; */
-      /* border-top: 1px solid var(--color-border); */
-    }
-
-    .cta h2 {
-      font-size: 1.5rem;
-      font-weight: 600;
-      margin-bottom: 0.75rem;
-      letter-spacing: -0.01em;
-    }
-
-    .cta p {
-      font-size: 1rem;
-      color: var(--color-text-secondary);
-      margin-bottom: 1.5rem;
-      max-width: 500px;
-      line-height: 1.6;
-    }
-
-    .cta-buttons {
-      display: flex;
-      gap: 1rem;
-    }
-
 
     .social {
       display: flex;
@@ -1001,24 +1108,29 @@ const socialLinks = Object.entries(siteConfig.social)
         font-size: 1rem;
       }
 
+      .content-section {
+        padding: var(--space-2xl) 0;
+      }
+
       .section-header {
         flex-direction: column;
         align-items: flex-start;
-        gap: 0.5rem;
+        gap: var(--space-sm);
+        margin-bottom: var(--space-lg);
+      }
+
+      .blog-card-list {
+        gap: var(--space-lg);
+      }
+
+      .blog-card-link {
+        padding: var(--space-lg);
       }
 
       .blog-title {
         font-size: 1rem;
       }
 
-      .cta-buttons {
-        flex-direction: column;
-      }
-
-      .cta-buttons .btn-primary,
-      .cta-buttons .btn-secondary {
-        width: 100%;
-      }
     }
   </style>
 </BaseLayout>
