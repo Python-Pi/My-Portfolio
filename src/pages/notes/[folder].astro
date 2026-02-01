@@ -2,9 +2,10 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import SEO from '../../components/SEO.astro';
 import PageStats from '../../components/PageStats.astro';
+import ArticleCard from '../../components/ArticleCard.astro';
 import { pagesConfig } from '../../pages.config';
 import { notesIndex } from '../../content/notes/notes-index';
-import type { NotesFolder, NotesEntryCollection, NotesEntry } from '../../content/notes/notes-index';
+import type { NotesFolder, NotesEntry } from '../../content/notes/notes-index';
 import { getEntry } from 'astro:content';
 
 export const prerender = true;
@@ -12,9 +13,11 @@ export const prerender = true;
 type NotesEntryWithContent = NotesEntry & {
   resolvedTitle: string;
   resolvedDescription?: string;
-  publishDate?: Date;
+  publishDate: Date;
   tags?: string[];
+  status?: 'published' | 'ongoing' | 'archived';
 };
+
 type NotesFolderWithContent = NotesFolder & { entries: NotesEntryWithContent[] };
 
 export async function getStaticPaths() {
@@ -33,22 +36,21 @@ export async function getStaticPaths() {
                   .replace(/-/g, ' ')
                   .replace(/\b\w/g, (char) => char.toUpperCase());
                 const resolvedTitle = contentEntry?.data.title ?? fallbackTitle;
-                const publishDate = contentEntry?.data.publishDate as Date | undefined;
+                const publishDate = contentEntry?.data.publishDate as Date;
                 const tags = (contentEntry?.data as { tags?: string[] }).tags;
+                const status = (contentEntry?.data as { status?: 'published' | 'ongoing' | 'archived' }).status;
+
                 return {
                   ...entry,
                   resolvedTitle,
                   resolvedDescription: contentEntry?.data.description ?? entry.summary ?? '',
                   publishDate,
                   tags,
+                  status,
                 } satisfies NotesEntryWithContent;
               })
             )
-          ).sort((a, b) => {
-            const dateA = a.publishDate ? a.publishDate.getTime() : 0;
-            const dateB = b.publishDate ? b.publishDate.getTime() : 0;
-            return dateB - dateA;
-          }),
+          ).sort((a, b) => b.publishDate.getTime() - a.publishDate.getTime()),
         } satisfies NotesFolderWithContent,
       },
     }))
@@ -59,9 +61,6 @@ const { folder } = Astro.props as { folder: NotesFolderWithContent };
 const config = pagesConfig.notes;
 const pageTitle = `${folder.title} · ${config.title}`;
 const pageDescription = folder.description ?? `All saved entries for ${folder.title}.`;
-
-const collectionLabel = (collection: NotesEntryCollection) => (collection === 'blogs' ? 'Blog' : 'Mini Blog');
-const entryHref = (collection: NotesEntryCollection, slug: string) => `${collection === 'blogs' ? '/blogs' : '/mini-blogs'}/${slug}`;
 ---
 
 <BaseLayout>
@@ -72,326 +71,40 @@ const entryHref = (collection: NotesEntryCollection, slug: string) => `${collect
     type="website"
   />
 
-  <main class="folder-page">
+  <main class="page-container">
     <header class="page-header">
-      <a class="back-link" href="/notes">
-        <span class="back-arrow" aria-hidden="true">←</span>
-        Back to notes
-      </a>
-      <p class="page-label">Folder</p>
+      <p class="page-label">Notes folder</p>
       <h1 class="page-title">{folder.title}</h1>
       {folder.description && <p class="page-description">{folder.description}</p>}
-      <div class="page-meta">
-        <PageStats text={`${folder.entries.length} ${folder.entries.length === 1 ? 'entry' : 'entries'}`} />
-      </div>
+      <PageStats
+        text={
+          folder.entries.length === 0
+            ? '0 entries'
+            : `${folder.entries.length} ${folder.entries.length === 1 ? 'entry' : 'entries'}`
+        }
+      />
     </header>
 
     {folder.entries.length > 0 ? (
-      <section class="entries-section" aria-label="Entries">
-        <ul class="entry-list" role="list">
-          {folder.entries.map((entry) => {
-            const enrichedEntry = entry as NotesEntryWithContent;
-            const date = enrichedEntry.publishDate;
-            const formattedDate = date
-              ? date.toLocaleDateString('en-US', {
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric',
-                })
-              : null;
-            const tags = enrichedEntry.tags ?? [];
-            return (
-              <li class="entry-item">
-                <a class="entry-link" href={entryHref(enrichedEntry.collection, enrichedEntry.slug)}>
-                  <div class="entry-meta">
-                    {formattedDate && <span class="entry-date">{formattedDate}</span>}
-                    {tags.length > 0 && (
-                      <div class="entry-tags">
-                        {tags.slice(0, 3).map((tag) => (
-                          <span class="entry-tag">{tag}</span>
-                        ))}
-                        {tags.length > 3 && (
-                          <span class="entry-tag more">+{tags.length - 3}</span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  <span class="entry-link-title">{enrichedEntry.resolvedTitle}</span>
-                  {enrichedEntry.resolvedDescription && (
-                    <span class="entry-link-desc">{enrichedEntry.resolvedDescription}</span>
-                  )}
-                  <span class="entry-link-arrow" aria-hidden="true">→</span>
-                </a>
-                <span class="entry-badge">{collectionLabel(enrichedEntry.collection)}</span>
-              </li>
-            );
-          })}
-        </ul>
-      </section>
-    ) : (
-      <div class="empty-state">
-        <div class="empty-state-icon" aria-hidden="true">📄</div>
-        <p class="empty-state-title">No entries yet</p>
-        <p class="empty-state-desc">Entries in this folder will appear here.</p>
+      <div class="card-list card-list--compact">
+        {folder.entries.map((entry) => {
+          const enrichedEntry = entry as NotesEntryWithContent;
+          const basePath = enrichedEntry.collection === 'blogs' ? '/blogs' : '/mini-blogs';
+          return (
+            <ArticleCard
+              title={enrichedEntry.resolvedTitle}
+              slug={enrichedEntry.slug}
+              description={enrichedEntry.resolvedDescription ?? ''}
+              publishDate={enrichedEntry.publishDate}
+              tags={enrichedEntry.tags}
+              status={enrichedEntry.status}
+              basePath={basePath}
+            />
+          );
+        })}
       </div>
+    ) : (
+      <p class="empty-state">No entries in this folder yet.</p>
     )}
   </main>
-
-  <style>
-    .folder-page {
-      max-width: 960px;
-      margin: 0 auto;
-      padding: 3rem 1.5rem 8rem;
-    }
-
-    .page-header {
-      margin-bottom: 2.5rem;
-    }
-
-    .back-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      font-size: var(--font-size-sm);
-      font-weight: 500;
-      text-decoration: none;
-      color: var(--color-text-muted);
-      margin-bottom: 1.25rem;
-      transition: color var(--transition-fast), gap var(--transition-fast);
-    }
-
-    .back-link:hover {
-      color: var(--color-accent);
-      gap: 0.5rem;
-    }
-
-    .back-arrow {
-      transition: transform var(--transition-fast);
-    }
-
-    .back-link:hover .back-arrow {
-      transform: translateX(-2px);
-    }
-
-    .page-label {
-      font-size: var(--font-size-sm);
-      font-weight: var(--font-weight-semibold);
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--color-accent);
-      margin-bottom: 0.5rem;
-    }
-
-    .page-title {
-      font-size: clamp(2rem, 5vw, 2.5rem);
-      font-weight: 700;
-      letter-spacing: -0.03em;
-      line-height: var(--line-height-tight);
-      margin: 0 0 0.75rem 0;
-      color: var(--color-text);
-    }
-
-    .page-description {
-      max-width: 540px;
-      font-size: var(--font-size-lg);
-      line-height: 1.65;
-      color: var(--color-text-muted);
-      margin: 0 0 1rem 0;
-    }
-
-    .page-meta {
-      font-size: var(--font-size-sm);
-      color: var(--color-text-muted);
-      margin-top: 0.25rem;
-    }
-
-    .entries-section {
-      border-radius: var(--border-radius-lg);
-      background: var(--color-bg-secondary);
-      border: 1px solid var(--color-border);
-      overflow: hidden;
-      transition: box-shadow var(--transition-base);
-      padding: 0.5rem 0;
-    }
-
-    .entries-section:focus-within {
-      box-shadow: var(--shadow-md);
-    }
-
-    .entry-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-    }
-
-    .entry-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      padding: 1rem 1.5rem;
-      border-bottom: 1px solid var(--color-border-subtle);
-      position: relative;
-    }
-
-    .entry-item:last-child {
-      border-bottom: none;
-    }
-
-    .entry-link {
-      flex: 1;
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 0.2rem;
-      text-decoration: none;
-      color: var(--color-text);
-      transition: color var(--transition-fast);
-      padding-right: 1.5rem;
-      position: relative;
-    }
-
-    .entry-link:hover {
-      color: var(--color-accent);
-    }
-
-    .entry-link:hover .entry-link-arrow {
-      opacity: 1;
-      transform: translateX(2px);
-    }
-
-    .entry-link-title {
-      font-weight: 500;
-      font-size: var(--font-size-base);
-    }
-
-    .entry-meta {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      font-size: var(--font-size-xs);
-      color: var(--color-text-muted);
-      margin-bottom: 0.15rem;
-    }
-
-    .entry-date {
-      white-space: nowrap;
-    }
-
-    .entry-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.35rem;
-    }
-
-    .entry-tag {
-      padding: 0.1rem 0.45rem;
-      border-radius: 999px;
-      background: var(--color-bg-elevated);
-      border: 1px solid var(--color-border-subtle);
-      font-size: 0.7rem;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
-
-    .entry-tag.more {
-      opacity: 0.8;
-    }
-
-    .entry-link-desc {
-      font-size: var(--font-size-sm);
-      color: var(--color-text-muted);
-      line-height: 1.4;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-
-    .entry-link:hover .entry-link-desc {
-      color: var(--color-text-secondary);
-    }
-
-    .entry-link-arrow {
-      position: absolute;
-      right: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: var(--font-size-sm);
-      color: var(--color-accent);
-      opacity: 0;
-      transition: opacity var(--transition-fast), transform var(--transition-fast);
-    }
-
-    .entry-badge {
-      flex-shrink: 0;
-      font-size: 0.7rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      padding: 0.25rem 0.5rem;
-      border-radius: 999px;
-      background: var(--color-accent-muted);
-      color: var(--color-accent);
-      border: 1px solid transparent;
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 3rem 2rem;
-      border: 1px dashed var(--color-border);
-      border-radius: var(--border-radius-lg);
-      background: var(--color-bg-secondary);
-    }
-
-    .empty-state-icon {
-      font-size: 2.5rem;
-      margin-bottom: 1rem;
-      opacity: 0.6;
-    }
-
-    .empty-state-title {
-      font-size: var(--font-size-lg);
-      font-weight: 600;
-      color: var(--color-text);
-      margin-bottom: 0.5rem;
-    }
-
-    .empty-state-desc {
-      font-size: var(--font-size-sm);
-      color: var(--color-text-muted);
-      margin: 0;
-    }
-
-    @media (max-width: 720px) {
-      .folder-page {
-        padding: 2.5rem 1rem 6rem;
-      }
-
-      .entries-section {
-        margin: 0 -0.5rem;
-        border-radius: var(--border-radius-md);
-      }
-
-      .entry-item {
-        padding: 1rem;
-        flex-wrap: wrap;
-      }
-
-      .entry-link {
-        padding-right: 1.25rem;
-      }
-
-      .entry-link-arrow {
-        right: 0;
-      }
-
-      .entry-badge {
-        margin-left: auto;
-      }
-    }
-  </style>
 </BaseLayout>
