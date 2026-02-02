@@ -27,6 +27,14 @@
 const WORDS_PER_MINUTE = 200;
 
 /**
+ * Average characters per minute for math content
+ *
+ * Math is slower to parse than prose. This estimate converts math characters
+ * into a time component independent of prose word count.
+ */
+const MATH_CHARS_PER_MINUTE = 75;
+
+/**
  * Calculates reading time in minutes from text content
  * 
  * Removes code blocks before counting words, as code requires different
@@ -43,13 +51,36 @@ const WORDS_PER_MINUTE = 200;
 export function calculateReadingTime(content: string): number {
   // Remove code blocks (they take longer to read, but we count them separately)
   const textWithoutCode = content.replace(/```[\s\S]*?```/g, '');
+
+  // Extract math (block + inline) and remove it from prose counting
+  const mathPatterns = [
+    /\$\$[\s\S]*?\$\$/g, // block math $$...$$
+    /\\\[[\s\S]*?\\\]/g, // block math \[...\]
+    /\\\([\s\S]*?\\\)/g, // inline math \(...\)
+    /\$(?!\$)(?:\\.|[^\$\\])+\$/g // inline math $...$
+  ];
+
+  let mathCharCount = 0;
+  let textWithoutMath = textWithoutCode;
+
+  for (const pattern of mathPatterns) {
+    const matches = textWithoutMath.match(pattern);
+    if (matches) {
+      for (const match of matches) {
+        mathCharCount += match.length;
+      }
+      textWithoutMath = textWithoutMath.replace(pattern, '');
+    }
+  }
   
   // Count words
-  const words = textWithoutCode.trim().split(/\s+/).filter(word => word.length > 0);
+  const words = textWithoutMath.trim().split(/\s+/).filter(word => word.length > 0);
   const wordCount = words.length;
-  
-  // Calculate minutes, minimum 1 minute
-  const minutes = Math.max(1, Math.ceil(wordCount / WORDS_PER_MINUTE));
+
+  // Calculate minutes from prose + math, minimum 1 minute
+  const proseMinutes = wordCount / WORDS_PER_MINUTE;
+  const mathMinutes = mathCharCount / MATH_CHARS_PER_MINUTE;
+  const minutes = Math.max(1, Math.ceil(proseMinutes + mathMinutes));
   
   return minutes;
 }

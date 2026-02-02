@@ -6,7 +6,7 @@ tags:
   - "Probabilistic Linear Regression"
   - "Machine Learning"
 draft: false
-status: "ongoing"
+status: "published"
 ---
 import ExpandableBlock from "../../mdx-components/ExpandableBlock.astro";
 
@@ -216,11 +216,133 @@ We estimate MAP by maximizing the posterior distribution of the weights given th
 the posterior directly, instead we maximize the log-posterior (or minimize the negative log-posterior):
 
 ```math 
-\mathbf{w}_{MAP} = (\mathbf{X}^T \mathbf{X} + \lambda I_D)^{-1} \mathbf{X}^T \mathbf{y}
+\mathbf{w}_{MAP} = (\mathbf{X}^T \mathbf{X} + \delta I_D)^{-1} \mathbf{X}^T \mathbf{y}
+```
+where $\delta$ is the regularization paramater 
+```math
+\delta = \frac{\lambda}{\beta}
 ```
 
 This is equivalent to minimizing the regularized loss function (MSE + L2 regularization).
 
 <ExpandableBlock title="Proof of MAP" open={false}>
 
+By Bayes's theorem, the posterior is proportional to the likelihood times the prior:
+
+```math
+p(\mathbf{w} | \mathbf{X}, \mathbf{y}) \propto p(\mathbf{y} | \mathbf{X}, \mathbf{w}) \cdot p(\mathbf{w})
+```
+
+where 
+
+```math
+p(\mathbf{y} | \mathbf{X}, \mathbf{w}) = \prod_{n=1}^{N} \mathcal{N}(y_n | \mathbf{w}^T x_n, \beta^{-1})
+```
+and 
+
+```math
+p(\mathbf{w}) = \mathcal{N}(\mathbf{w} | 0, \lambda^{-1}I_D)
+``` 
+
+Applying the log transformation (ignoring constants and hyperparameters for simplification):
+
+```math
+\log p(\mathbf{w} | \mathbf{X}, \mathbf{y}) = \log p(\mathbf{y} | \mathbf{X}, \mathbf{w}) + \log p(\mathbf{w})
+```
+
+```math
+= -\frac{\beta}{2} \sum_{n=1}^{N} (y_n - \mathbf{w}^T x_n)^2 - \frac{\lambda}{2} \mathbf{w}^T \mathbf{w} + C
+```
+
+The MAP objective is to maximize the log-posterior:
+
+```math
+\mathbf{w}_{MAP} = \arg\max_{\mathbf{w}} \log p(\mathbf{w} | \mathbf{X}, \mathbf{y})
+```
+
+```math
+= \arg\min_{\mathbf{w}} \left( \sum_{n=1}^{N} (y_n - \mathbf{w}^T x_n)^2 + \delta \mathbf{w}^T \mathbf{w} \right)
+```
+where $\delta$ is the regularization paramater 
+```math
+\delta = \frac{\lambda}{\beta}
+```
+
+This is equivalent to minimizing the regularized loss function (MSE + L2 regularization) which leads to the closed-form solution:
+
+```math
+\mathbf{w}_{MAP} = (\mathbf{X}^T \mathbf{X} + \delta I_D)^{-1} \mathbf{X}^T \mathbf{y}
+```
 </ExpandableBlock>
+
+**Note**: MAP by definition is the mode of the posterior distribution. In the case of Gaussian distributions, the mode coincides with the mean. So, the MAP estimate is also the mean of the posterior distribution.
+
+### Posterior Distribution
+
+Guassian Likelihood + Guassian Prior = Guassian Posterior. So, the posterior distribution of the weights is also Gaussian:
+
+```math
+p(\mathbf{w} | \mathbf{X}, \mathbf{y}, \beta, \lambda) = \mathcal{N}(\mathbf{w} | \mu_N, \Sigma_N)
+```
+
+where 
+
+```math
+\mu_N = \left(\mathbf{X}^T \mathbf{X} + \frac{\lambda}{\beta} I_D\right)^{-1} \mathbf{X}^T \mathbf{y}
+```
+
+```math
+\Sigma_N = \left(\beta \mathbf{X}^T \mathbf{X} + \lambda I_D\right)^{-1}
+``` 
+
+### Posterior Predictive Distribution (PPD)
+
+To make predictions for a new input $\mathbf{x}_*$, we use the posterior predictive distribution:
+
+```math
+p(y_* | \mathbf{x}_*, \mathbf{X}, \mathbf{y}) = \int p(y_* | \mathbf{x}_*, \mathbf{w}) \cdot p(\mathbf{w} | \mathbf{X}, \mathbf{y}) d\mathbf{w}
+```
+
+Adding hyperparameters $\beta$ and $\lambda$ gives us:
+
+```math
+p(y_* | \mathbf{x}_*, \mathbf{X}, \mathbf{y}, \beta, \lambda) = \int p(y_* | \mathbf{x}_*, \mathbf{w}, \beta) \cdot p(\mathbf{w} | \mathbf{X}, \mathbf{y}, \beta, \lambda) d\mathbf{w}
+```
+
+where 
+
+```math
+p(y_* | \mathbf{x}_*, \mathbf{w}, \beta) = \mathcal{N}(y_* | \mathbf{w}^T \mathbf{x}_*, \beta^{-1})
+```
+
+```math
+p(\mathbf{w} | \mathbf{X}, \mathbf{y}, \beta, \lambda) = \mathcal{N}(\mathbf{w} | \mu_N, \Sigma_N)
+```
+
+The resulting posterior predictive distribution is also Gaussian and is given by:
+
+```math
+p(y_* | \mathbf{x}_*, \mathbf{X}, \mathbf{y}, \beta, \lambda) = \mathcal{N}(\mu_{N}^{T} \mathbf{x}_* \; , \; \beta^{-1} + \mathbf{x}_*^{T} \Sigma_N \mathbf{x}_*)
+```
+
+The **predictive mean** and **predictive variance** are given by:
+```math
+\mu_{N}^{T} \mathbf{x}_* \quad \text{and} \quad \beta^{-1} + \mathbf{x}_*^{T} \Sigma_N \mathbf{x}_*
+```
+
+> Since, PPD also takes into account the uncertainty in the weights, the predictive variance is higher than "plug-in" predictions 
+i.e. MLE or MAP predictions.
+
+### Other Variants 
+
+- We can use Laplace likelihood instead of Gaussian likelihood. This leads to L1 loss (Mean Absolute Error) instead of L2 loss (MSE). 
+
+## Summary
+
+- Probabilistic Linear Regression models the relationship between inputs and outputs while accounting for uncertainty.
+- It uses Gaussian likelihood and Gaussian prior to derive the posterior distribution of weights.
+- MLE provides point estimates of weights by maximizing the likelihood, while MAP incorporates prior beliefs to regularize the estimates.
+- The posterior predictive distribution allows us to make predictions for new inputs while quantifying uncertainty.
+- This can be extended to Non-Linear Regression using non-linear mappings or kernel methods.
+
+

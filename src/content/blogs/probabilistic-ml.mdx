@@ -8,5 +8,280 @@ tags:
 draft: false
 status: "ongoing"
 ---
+import ExpandableBlock from "../../mdx-components/ExpandableBlock.astro";
 
-## Basics of Probabilistic Machine Learning
+Some Basic rules of probability that are useful in Probabilistic Machine Learning:
+<ExpandableBlock title="Probability Math" open={false}>
+**Sum Rule**: Gives the marginal probability distribution from joint probability distribution.
+```math
+\text{For Discrete random variables:} \quad P(X) = \sum_{Y} P(X, Y)
+```
+```math
+\text{For Continuous random variables:} \quad P(X) = \int P(X, Y) dY
+```
+
+**Product Rule**: Relates joint probability to conditional and marginal probabilities.
+```math
+P(X, Y) = P(Y|X) \cdot P(X) = P(X|Y) \cdot P(Y)
+```
+**Bayes Rule**: Relates conditional probabilities.
+```math
+P(Y|X) = \frac{P(X|Y) \cdot P(Y)}{P(X)}
+```
+
+```math
+P(Y|X) = \frac{P(X|Y) \cdot P(Y)}{\int P(X|Y) \cdot P(Y) dY}
+```
+
+**Rule of iterated expectation**: 
+```math
+E_{P(X)}[X] = E_{P(Y)}[E_{P(X|Y)}[X|Y]]
+```
+The expected value of a random variable can be computed by taking the expected value of its conditional expectation with respect 
+to another variable.
+
+**Entropy**: A measure of uncertainty in a random variable.
+```math
+H(x) = - \int P(x) \log P(x) dx
+```
+
+**KL Divergence**: A measure of how one probability distribution diverges from a second expected probability distribution.
+```math
+D_{KL}(P || Q)  = \int P(x) \log \frac{P(x)}{Q(x)} dx
+``` 
+</ExpandableBlock>
+
+## Probabilistic Modelling 
+
+Probabilistic Machine Learning (PML) is machine learning where uncertainty is explicitly modeled using probability.
+In PML, we represent our knowledge about the world using probability distributions. The important components of a probabilistic model are:
+- **Likelihood**: The probability of the observed data given the model parameters. ($\theta$)
+- **Prior**: The initial belief about the model parameters ($\theta$) before observing any data.
+- **Posterior**: The updated belief about the model parameters ($\theta$) after observing the data.
+
+Mathematically, the components can be expressed as follows:
+- Likelihood: $P(D|\theta)$
+- Prior: $P(\theta)$
+- Posterior: $P(\theta|D)$
+
+### Maximum Likelihood Estimation (MLE)
+In MLE, we aim to find the parameter values ($\theta$) that maximize the likelihood of the observed data ($D$).
+```math
+\theta_{MLE} = \arg\max_{\theta} P(D|\theta)
+```
+- MLE is akin is minimizing a loss function. (negative log-likelihood)
+
+However, MLE does not incorporate prior beliefs about the parameters. Also, provides only a point estimates of the parameters.
+
+### Maximum A Posteriori (MAP) Estimation
+In MAP estimation, we aim to find the parameter values ($\theta$) that maximize the posterior distribution given the observed data ($D$).
+```math
+\theta_{MAP} = \arg\max_{\theta} P(\theta|D)
+```
+```math 
+P(\theta|D) = \frac{P(D|\theta) \cdot P(\theta)}{P(D)} = \frac{P(D|\theta) \cdot P(\theta)}{\int P(D|\theta) \cdot P(\theta) d\theta}
+```
+
+This corresponds to 
+```math
+Posterior = \frac{Likelihood \cdot Prior}{Marginal \; Likelihood}
+```
+
+<ExpandableBlock title="Marginal Likelihood" open={false}>
+It is the probability of the observed data, after averaging over all possible model parameters. It is also called **model evidence**.
+
+Formally:
+```math
+P(D) = \int P(D|\theta) \cdot P(\theta) d\theta = \mathbf{E}_{P(\theta)}[P(D|\theta)]
+``` 
+Usually, it's hard to compute because of the expectations but can be approximated.
+
+> For a fixed model, marginal likelihood is usually a constant. That's why we assume 
+
+```math
+\theta_{MAP} \propto \arg\max_{\theta} P(D|\theta) \cdot P(\theta)
+```
+
+</ExpandableBlock>
+
+- MAP estimation is akin to minimizing a **regularized** loss function. The regularization term is:
+
+```math
+- \log P(\theta)
+```
+
+### Making Predictions 
+
+> Goal is to compute $P(D_*|D)$ where $D_*$ is the new/unseen data and $D$ is the observed data.
+
+We can make predictions in two ways:
+- "Plug-in" predictions using point estimates (MLE or MAP)
+- Full Bayesian predictions using the posterior distribution
+
+**Plug-in Predictions**:
+Just use the point estimate of the parameters to make predictions.
+
+```math
+P(D_*|D) \approx P(D_*|\theta_{MLE}) \; \text{or} \; P(D_*|\theta_{MAP})
+```
+**Full Bayesian Predictions**:
+Integrate over the posterior distribution of the parameters to make predictions.
+
+```math
+P(D_*|D) = \int P(D_*|\theta) \cdot P(\theta|D) d\theta
+```
+
+**Other ways**:
+
+- If we don't want to compute the full posterior, we can do the follows (ratio of likelihoods)
+
+```math
+P(D_*|D)  = \frac{P(D_*, D)}{P(D)} 
+```
+This is equiavalent of ratio of Joint likelihood and marginal likelihood of training data.
+
+- Using ensemble of estimates ($\theta^{(m)}$) from the posterior distribution.
+
+```math
+P(D_*|D) \approx \frac{1}{M} \sum_{m=1}^{M} P(D_*|\theta^{(m)})
+```
+
+## Bernoulli Observation Model 
+
+Used for binary valued observations.
+
+- **Likelihood**: Bernoulli distribution
+- **Prior**: Beta distribution
+- **Posterior**: Beta distribution 
+
+Mathematically, likelihood for $y_n$ is give by:
+```math
+P(y_n|\theta) = \theta^{y_n} (1 - \theta)^{1 - y_n}
+```
+
+We estimate the prior to be a beta distribution:
+```math
+P(\theta| \alpha, \beta) = \frac{\Gamma(\alpha + \beta)}{\Gamma(\alpha) \Gamma(\beta)} \theta^{\alpha - 1} (1 - \theta)^{\beta - 1}
+```
+
+### Maximum Likelihood Estimation (MLE)
+The MLE estimate for $\theta$ is given by:
+```math
+\theta_{MLE} = \frac{1}{N} \sum_{n=1}^{N} y_n
+```
+
+### Maximum A Posteriori (MAP) Estimation
+The MAP estimate for $\theta$ is given by:
+```math
+\theta_{MAP} = \frac{\alpha - 1 + \sum_{n=1}^{N} y_n}{\alpha + \beta - 2 + N}
+```
+
+### Posterior Distribution
+The posterior distribution is given by:
+
+```math
+P(\theta|y) = \text{Beta}\left(\theta | \alpha + N_1, \beta + N_0\right)
+```
+where $N_1$ is the number of positive observations (i.e., $y_n = 1$) and $N_0$ is the number of negative observations (i.e., $y_n = 0$).
+
+### Posterior Predictive Distribution (PPD)
+The predictive distribution for a new observation $y_*$ is given by:
+```math
+P(y_* = 1|y) = \frac{\alpha + N_1}{\alpha + \beta + N}
+```
+
+<ExpandableBlock title="Brief Proof" open={false}>
+```math
+\begin{aligned}
+P(y_* = 1 \mid y)
+&= \int P(y_* = 1 \mid \theta)\, P(\theta \mid y)\, d\theta \\
+&= \int \theta \, P(\theta \mid y)\, d\theta \\
+&= \mathbb{E}_{P(\theta \mid y)}[\theta] \\
+&= \frac{\alpha + N_1}{\alpha + \beta + N}
+\end{aligned}
+```
+</ExpandableBlock>
+
+Therefore, the posterior predictive distribution is a Bernoulli distribution give by
+```math
+P(y_*|\alpha, \beta, y) = \text{Bernoulli}\left(y_* \mid \frac{\alpha + N_1}{\alpha + \beta + N}\right)
+```
+
+
+
+## Multinoulli Observation Model
+
+Used for discrete valued observations with more than two categories.
+
+## Gaussian Observation Model
+Gaussian distribution is given by:
+```math
+\mathcal{N}(x | \mu, \sigma^2) = \frac{1}{\sqrt{2 \pi \sigma^2}} \exp\left(-\frac{(x - \mu)^2}{2 \sigma^2}\right)
+```
+
+Used for continuous valued observations.
+
+- **Likelihood**: Gaussian distribution
+- **Prior**: Gaussian distribution
+- **Posterior**: Gaussian distribution 
+
+Mathematically, likelihood for $y_n$ and overall likelihood is given by:
+```math
+P(y_n|\mu, \sigma^2) = \mathcal{N}(y_n | \mu, \sigma^2) 
+```
+```math
+P(y|\mu, \sigma^2) = \prod_{n=1}^{N } \mathcal{N}(y_n | \mu, \sigma^2) 
+```
+
+We assume the values $y_n$ are centered around mean $\mu$ with variance $\sigma^2$.
+
+We estimate the prior to be a Gaussian distribution:
+```math
+P(\mu) = \mathcal{N}(\mu | \mu_0, \sigma_0^2)
+```
+
+### Maximum Likelihood Estimation (MLE)
+The MLE estimate for $\mu$ is given by:
+```math
+\mu_{MLE} = \frac{1}{N} \sum_{n=1}^{N} y_n
+```
+
+### Maximum A Posteriori (MAP) Estimation
+The MAP estimate for $\mu$ is given by:
+```math
+\mu_{MAP} = \frac{\sigma^2 \mu_0 + \sigma_0^2 \sum_{n=1}^{N} y_n}{\sigma^2 + N \sigma_0^2}
+```
+
+### Posterior Distribution
+The posterior distribution is given by:
+```math
+P(\mu|y) = \mathcal{N}\left(\mu \mid \mu_N, \sigma_N^2\right)
+```
+where
+```math
+\mu_N = \frac{\sigma^2 \mu_0 + \sigma_0^2 \sum_{n=1}^{N} y_n}{\sigma^2 + N \sigma_0^2}
+```
+```math
+\sigma_N^2 = \frac{\sigma^2 \sigma_0^2}{\sigma^2 + N \sigma_0^2}
+```
+> MAP estimate is the mean of the posterior distribution because the mode (by definition it's MAP) and mean of a Gaussian distribution are the same.
+
+### Posterior Predictive Distribution (PPD)
+The predictive distribution for a new observation $y_*$ is given by:
+```math
+P(y_*|y) = \mathcal{N}\left(y_* \mid \mu_N, \sigma^2 + \sigma_N^2\right)
+```
+
+<ExpandableBlock title="Brief Proof" open={false}>
+```math
+\begin{aligned}
+P(y_* \mid y)
+&= \int P(y_* \mid \mu)\, P(\mu \mid y)\, d\mu \\
+&= \int \mathcal{N}(y_* \mid \mu, \sigma^2) \, \mathcal{N}(\mu \  | \mu_N, \sigma_N^2) \, d\mu \\
+&= \mathcal{N}(y_* \mid \mu_N, \sigma^2 + \sigma_N^2)
+\end{aligned}
+```
+</ExpandableBlock>
+
+So, the posterior predictive distribution is also a Gaussian distribution.
+
