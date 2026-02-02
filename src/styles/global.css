@@ -178,6 +178,18 @@ pre code {
   line-height: inherit;
 }
 
+/* Math (KaTeX) */
+.katex-display {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.katex-display > .katex {
+  max-width: 100%;
+}
+
 /* Utility Classes */
 .container {
   max-width: var(--max-width-content);

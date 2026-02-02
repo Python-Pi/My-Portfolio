@@ -131,7 +131,11 @@ p(y_n | x_n, \mathbf{w}, \beta) = \mathcal{N}(y_n | \mathbf{w}^T x_n, \beta^{-1}
 (We can also use mean $\mu$ if we expect weights to be centered around some value):
 
 ```math
-p(\mathbf{w} | \lambda) = \prod_{d=1}^{D} p(w_d | \lambda) = \prod_{d=1}^{D} \mathcal{N}(w_d | 0, \lambda^{-1}) = \mathcal{N}(\mathbf{w} | 0, \lambda^{-1}I_D)
+p(\mathbf{w} | \lambda) = \prod_{d=1}^{D} p(w_d | \lambda) = \prod_{d=1}^{D} \mathcal{N}(w_d | 0, \lambda^{-1})
+```
+
+```math 
+= \mathcal{N}(\mathbf{w} | 0, \lambda^{-1}I_D)
 ```
 
 where $D$ is the number of features and $I_D$ is the identity matrix.
