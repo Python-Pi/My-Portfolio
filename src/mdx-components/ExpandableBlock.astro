@@ -1,0 +1,120 @@
+---
+/**
+ * ExpandableBlock Component
+ * 
+ * Collapsible container for code, math, or text content.
+ * Uses native <details>/<summary> for accessibility and no-JS toggling.
+ * 
+ * @component
+ * 
+ * @example
+ * ```astro
+ * ---
+ * import ExpandableBlock from "../../mdx-components/ExpandableBlock.astro";
+ * ---
+ * 
+ * <ExpandableBlock title="Derivation (click to expand)" open={false}>
+ *   <p>Derivation steps here...</p>
+ * </ExpandableBlock>
+ * ```
+ */
+
+interface Props {
+  /** Summary text shown in the header */
+  title: string;
+
+  /** Whether the block is open by default */
+  open?: boolean;
+
+  /** Optional additional classes */
+  class?: string;
+}
+
+const { title, open = false, class: className } = Astro.props;
+---
+
+<details class:list={["expandable-block", className]} open={open}>
+  <summary class="expandable-summary">
+    <span class="expandable-title">{title}</span>
+    <svg class="expandable-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <polyline points="6 9 12 15 18 9"></polyline>
+    </svg>
+  </summary>
+  <div class="expandable-content">
+    <slot />
+  </div>
+</details>
+
+<style>
+  .expandable-block {
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-md);
+    background: var(--color-bg-secondary);
+    overflow: hidden;
+    margin: 1.5rem 0;
+  }
+
+  .expandable-summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.9rem 1.1rem;
+    font-weight: 600;
+    color: var(--color-text);
+    background: var(--color-bg-elevated);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .expandable-summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .expandable-title {
+    font-size: 0.95rem;
+    letter-spacing: -0.01em;
+  }
+
+  .expandable-icon {
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  details[open] .expandable-icon {
+    transform: rotate(180deg);
+  }
+
+  .expandable-content {
+    padding: 1rem 1.1rem;
+  }
+
+  .expandable-content :global(p:first-child) {
+    margin-top: 0;
+  }
+
+  .expandable-content :global(p:last-child) {
+    margin-bottom: 0;
+  }
+
+  .expandable-content :global(pre) {
+    margin: 0.75rem 0;
+  }
+
+  @media (max-width: 640px) {
+    .expandable-summary {
+      padding: 0.8rem 1rem;
+    }
+
+    .expandable-content {
+      padding: 0.9rem 1rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .expandable-icon {
+      transition: none;
+    }
+  }
+</style>

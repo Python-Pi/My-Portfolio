@@ -61,6 +61,14 @@ export const notesIndex: NotesFolder[] = [
         slug: 'discriminative-generative-models',
         collection: 'mini-blogs',
       },
+      {
+        slug: 'probabilistic-linear-regression',
+        collection: 'blogs',
+      },
+      {
+        slug: 'probabilistic-ml',
+        collection: 'blogs',
+      }
     ],
   },
   {

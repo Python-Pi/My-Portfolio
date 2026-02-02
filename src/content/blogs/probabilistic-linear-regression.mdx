@@ -1,0 +1,222 @@
+---
+title: "Probabilistic Linear Regression"
+description: "Introduction to Probabilistic Linear Regression and its key concepts."
+publishDate: 2026-02-02
+tags:
+  - "Probabilistic Linear Regression"
+  - "Machine Learning"
+draft: false
+status: "ongoing"
+---
+import ExpandableBlock from "../../mdx-components/ExpandableBlock.astro";
+
+
+## What is Linear Regression?
+
+Linear regression is a fundamental machine learning technique use to model the relationship between a dependent variable $(y)$ 
+and one or more independent variables $(x)$.  The general form of a linear regression model is:
+
+```math 
+y = wx + b
+```
+
+where $w$ represents the weights (coefficients) and $b$ is the bias (intercept). In case of multiple features, this can be expressed as:
+```math
+y = w_1x_1 + w_2x_2 + ... + w_nx_n + b
+``` 
+
+```math
+y = \mathbf{w}^T \mathbf{x} + b
+```
+
+where $\mathbf{w}$ is the weight vector and $\mathbf{x}$ is the feature vector.
+
+```math 
+\mathbf{w} = \begin{bmatrix}
+w_1 \\
+w_2 \\
+\vdots \\
+w_n
+\end{bmatrix}
+
+\quad \quad 
+
+\mathbf{x} = \begin{bmatrix}
+x_1 \\
+x_2 \\
+\vdots \\
+x_n
+\end{bmatrix}
+``` 
+
+We sometimes furthur simplify this notation by incorporating the bias term into the weight and feature vectors:
+
+```math 
+\mathbf{w} = \begin{bmatrix}
+w_1 \\
+w_2 \\
+\vdots \\
+w_n \\
+b
+\end{bmatrix}
+
+\quad \quad 
+
+\mathbf{x} = \begin{bmatrix}
+x_1 \\
+x_2 \\
+\vdots \\
+x_n \\
+1
+\end{bmatrix}
+``` 
+
+and thus the model can be rewritten as:
+
+```math
+y = \mathbf{w}^T \mathbf{x}
+```
+
+### How to solve Linear Regression?
+
+The goal of linear regression is to find the optimal weights $\mathbf{w}$ that minimize the difference between the predicted values and the actual values. 
+We do this by minimizing a loss function, typically the Mean Squared Error (MSE):   
+
+```math
+L(\mathbf{w}) = \frac{1}{N} \sum_{i=1}^{N} (y_i - \mathbf{w}^T \mathbf{x}_i)^2
+``` 
+
+where $N$ is the number of data points, $y_i$ is the actual value, and $\mathbf{x}_i$ is the feature vector for the $i^{th}$ data point. 
+The solution $\mathbf{w}$ can be expressed as 
+
+```math
+\mathbf{w} = \arg\min_{\mathbf{w}} L(\mathbf{w}) = \arg\min_{\mathbf{w}} \sum_{i=1}^{N} (y_i - \mathbf{w}^T \mathbf{x}_i)^2
+```
+
+## Probabilistic Linear Regression
+
+### Key Ideas
+
+We assume 
+> Outputs are noisy observations of a linear function
+
+```math
+y = \mathbf{w}^T \mathbf{x} + \epsilon
+```
+
+where noise $\epsilon$ is normally distributed with mean $0$ and variance $\sigma^2$ (or precision $\beta = 1/\sigma^2$):
+
+```math
+\epsilon \sim \mathcal{N}(0, \sigma^2) = \mathcal{N}(0, \beta^{-1})
+```
+
+### Modeling 
+
+To learn more about the probalisitc approach, check out my blog on [Basics of Probabilistic Machine Learning](/blogs/probabilistic-ml)
+
+Simply put, 
+
+- **Likelihood** $p(y | w)$: How likely is the observed data given the model parameters (weights)?
+- **Prior** $p(w)$: What do we believe about the model parameters before seeing the data?
+- **Posterior** $p(w | y)$: Updated belief about the model parameters after seeing the data.
+
+
+**Likelihood**: We model the Likelihood as a Gaussian distribution:
+
+```math
+p(y_n | x_n, \mathbf{w}, \beta) = \mathcal{N}(y_n | \mathbf{w}^T x_n, \beta^{-1})
+```
+
+**Prior**: We also assume a Gaussian prior over the weights with mean 0 and precision $\lambda$ 
+(We can also use mean $\mu$ if we expect weights to be centered around some value):
+
+```math
+p(\mathbf{w} | \lambda) = \prod_{d=1}^{D} p(w_d | \lambda) = \prod_{d=1}^{D} \mathcal{N}(w_d | 0, \lambda^{-1}) = \mathcal{N}(\mathbf{w} | 0, \lambda^{-1}I_D)
+```
+
+where $D$ is the number of features and $I_D$ is the identity matrix.
+
+```math 
+p(\mathbf{w} | \lambda) \propto \left( \frac{\lambda}{2\pi} \right)^{\frac{D}{2}} \exp\left(-\frac{\lambda}{2} \mathbf{w}^T \mathbf{w}\right)
+```
+> Zero mean prior encourages smaller weights, helping to prevent overfitting. This acts like $l_2$ regularization.
+
+Because the negative log of prior (which we minimize) includes 
+
+```math 
+-\log p(\mathbf{w} | \lambda) \propto \frac{\lambda}{2} \mathbf{w}^T \mathbf{w}
+```
+
+<ExpandableBlock title="L2 Regularization" open={false}>
+For a standard linear regression problem:
+
+**Without Regularization**:
+```math
+L(\mathbf{w}) = \sum_{i=1}^{N} (y_i - \mathbf{w}^T \mathbf{x}_i)^2
+```
+
+**With L2 Regularization**:
+```math
+L(\mathbf{w}) = \sum_{i=1}^{N} (y_i - \mathbf{w}^T \mathbf{x}_i)^2 + \lambda \mathbf{w}^T \mathbf{w}
+```
+
+where $\lambda$ is the regularization parameter and 
+```math 
+\mathbf{w}^T \mathbf{w} = \sum_{d=1}^{D} w_d^2
+```
+This extra term penalizes large weights, encouraging the model to find a balance between fitting the data and keeping the weights small.
+
+</ExpandableBlock>
+
+### Maximum Likelihood Estimation (MLE)
+
+We estimate MLE by maximing the log-likelihood of the data (or minimizing the negative log-likelihood):
+
+```math
+\mathbf{w}_{MLE} = (\mathbf{X}^T \mathbf{X})^{-1} \mathbf{X}^T \mathbf{y}
+```
+This is equivalent to minimizing the Mean Squared Error (MSE) loss function used in standard linear regression.
+
+<ExpandableBlock title="Proof of MLE" open={false}>
+We start with the likelihood of the data given the weights:
+```math 
+p(y_n | x_n, \mathbf{w}, \beta) = \mathcal{N}(y_n | \mathbf{w}^T x_n, \beta^{-1}) = \left( \frac{\beta}{2\pi} \right)^{\frac{1}{2}} \exp\left(-\frac{\beta}{2} (y_n - \mathbf{w}^T x_n)^2\right)
+```
+The log-likelihood for all data points is:
+```math
+p(y | \mathbf{X}, \mathbf{w}, \beta) = \prod_{n=1}^{N} \mathcal{N}(y_n | \mathbf{w}^T x_n, \beta^{-1})
+```
+For simplification, we take the log (I'm also ignoring the hyperparameters and constants ):
+```math
+\log p(y) = \sum_{n=1}^{N} \log \mathcal{N}(y_n)
+```
+
+```math
+\log p(y) \propto \sum_{n=1}^{N} (y_n - \mathbf{w}^T x_n)^2
+```
+
+So, the MLE objective becomes:
+```math
+\mathbf{w}_{MLE} = \arg\min_{\mathbf{w}} \sum_{n=1}^{N} (y_n - \mathbf{w}^T x_n)^2 = \arg\min_{\mathbf{w}} || \mathbf{y} - \mathbf{X}\mathbf{w} ||^2
+```
+
+This is equivalent to minimizing the Mean Squared Error (MSE) loss function used in standard linear regression. Upon solving, we get the closed-form solution:
+```math
+\mathbf{w}_{MLE} = (\mathbf{X}^T \mathbf{X})^{-1} \mathbf{X}^T \mathbf{y}
+```
+</ExpandableBlock>
+
+### Maximum A Posteriori (MAP) Estimation
+
+We estimate MAP by maximizing the posterior distribution of the weights given the data. In this cases, we don't need to estimate 
+the posterior directly, instead we maximize the log-posterior (or minimize the negative log-posterior):
+
+```math 
+\mathbf{w}_{MAP} = (\mathbf{X}^T \mathbf{X} + \lambda I_D)^{-1} \mathbf{X}^T \mathbf{y}
+```
+
+This is equivalent to minimizing the regularized loss function (MSE + L2 regularization).
+
+<ExpandableBlock title="Proof of MAP" open={false}>
+
+</ExpandableBlock>
