@@ -66,3 +66,6 @@ coverage/
 
 # Private Notes
 private-notes.mdx
+
+# Cspell ignore file
+.cspell.json

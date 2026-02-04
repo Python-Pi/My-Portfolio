@@ -1,0 +1,223 @@
+---
+/**
+ * ThemeColorSelect Component
+ * 
+ * Small dropdown to switch the site's accent palette. Persists selection in
+ * localStorage and updates the document's data-accent attribute.
+ */
+---
+
+<div class="theme-color" data-open="false">
+  <span class="sr-only">Theme color</span>
+  <button
+    class="theme-color__trigger"
+    type="button"
+    aria-label="Theme color"
+    aria-haspopup="listbox"
+    aria-expanded="false"
+  >
+    <span class="theme-color__swatch theme-color__swatch--current" aria-hidden="true"></span>
+  </button>
+  <div class="theme-color__menu" role="listbox" aria-label="Theme colors">
+    <button class="theme-color__option" type="button" role="option" data-accent="blue" aria-label="Blue">
+      <span class="theme-color__swatch theme-color__swatch--blue" aria-hidden="true"></span>
+    </button>
+    <button class="theme-color__option" type="button" role="option" data-accent="violet" aria-label="Violet">
+      <span class="theme-color__swatch theme-color__swatch--violet" aria-hidden="true"></span>
+    </button>
+    <button class="theme-color__option" type="button" role="option" data-accent="emerald" aria-label="Emerald">
+      <span class="theme-color__swatch theme-color__swatch--emerald" aria-hidden="true"></span>
+    </button>
+    <button class="theme-color__option" type="button" role="option" data-accent="amber" aria-label="Amber">
+      <span class="theme-color__swatch theme-color__swatch--amber" aria-hidden="true"></span>
+    </button>
+    <button class="theme-color__option" type="button" role="option" data-accent="rose" aria-label="Rose">
+      <span class="theme-color__swatch theme-color__swatch--rose" aria-hidden="true"></span>
+    </button>
+  </div>
+</div>
+
+<style>
+  .theme-color {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .theme-color__trigger {
+    display: inline-flex;
+    align-items: center;
+    height: 32px;
+    width: 32px;
+    padding: 0;
+    border-radius: 999px;
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-secondary);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: border-color var(--transition-fast), background var(--transition-fast), color var(--transition-fast);
+    justify-content: center;
+  }
+
+  .theme-color__trigger:hover {
+    border-color: var(--color-accent);
+    color: var(--color-text);
+  }
+
+  .theme-color__trigger:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  .theme-color__menu {
+    position: absolute;
+    top: calc(100% + 0.35rem);
+    right: 0;
+    display: flex;
+    gap: 0.35rem;
+    padding: 0.5rem 0.6rem;
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm);
+    z-index: 200;
+    opacity: 0;
+    transform: translateY(-4px);
+    pointer-events: none;
+    transition: opacity var(--transition-fast), transform var(--transition-fast);
+  }
+
+  .theme-color[data-open="true"] .theme-color__menu {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .theme-color__option {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    background: transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .theme-color__option[aria-selected="true"] {
+    border-color: var(--color-text);
+  }
+
+  .theme-color__option:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  .theme-color__swatch {
+    width: 16px;
+    height: 16px;
+    border-radius: 999px;
+    display: inline-block;
+  }
+
+  .theme-color__swatch--blue { background: #3b82f6; }
+  .theme-color__swatch--violet { background: #8b5cf6; }
+  .theme-color__swatch--emerald { background: #10b981; }
+  .theme-color__swatch--amber { background: #f59e0b; }
+  .theme-color__swatch--rose { background: #f43f5e; }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  @media (max-width: 768px) {
+    .theme-color__trigger {
+      height: 30px;
+      width: 30px;
+    }
+
+    .theme-color__option {
+      width: 22px;
+      height: 22px;
+    }
+  }
+</style>
+
+<script>
+  const DEFAULT_ACCENT = 'blue';
+
+  const applyAccent = (accent: string) => {
+    document.documentElement.setAttribute('data-accent', accent);
+    localStorage.setItem('accent', accent);
+  };
+
+  const syncUI = () => {
+    const root = document.querySelector('.theme-color');
+    const currentSwatch = document.querySelector('.theme-color__swatch--current');
+    const options = document.querySelectorAll('.theme-color__option');
+    if (!(root instanceof HTMLElement)) return;
+    if (!(currentSwatch instanceof HTMLElement)) return;
+
+    const stored = localStorage.getItem('accent');
+    const accent = stored || DEFAULT_ACCENT;
+    applyAccent(accent);
+
+    currentSwatch.className = `theme-color__swatch theme-color__swatch--current theme-color__swatch--${accent}`;
+    options.forEach((option) => {
+      if (!(option instanceof HTMLButtonElement)) return;
+      option.setAttribute('aria-selected', option.dataset.accent === accent ? 'true' : 'false');
+    });
+  };
+
+  const setOpen = (open: boolean) => {
+    const root = document.querySelector('.theme-color');
+    const trigger = document.querySelector('.theme-color__trigger');
+    if (!(root instanceof HTMLElement)) return;
+    if (!(trigger instanceof HTMLButtonElement)) return;
+    root.dataset.open = open ? 'true' : 'false';
+    trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+  };
+
+  document.addEventListener('click', (event) => {
+    const target = event.target;
+    const option = target instanceof Element ? target.closest('.theme-color__option') : null;
+    const trigger = target instanceof Element ? target.closest('.theme-color__trigger') : null;
+    const root = document.querySelector('.theme-color');
+
+    if (option instanceof HTMLButtonElement) {
+      const accent = option.dataset.accent || DEFAULT_ACCENT;
+      applyAccent(accent);
+      syncUI();
+      setOpen(false);
+      return;
+    }
+
+    if (trigger instanceof HTMLButtonElement) {
+      const isOpen = root instanceof HTMLElement && root.dataset.open === 'true';
+      setOpen(!isOpen);
+      return;
+    }
+
+    if (root instanceof HTMLElement && !root.contains(target as Node)) {
+      setOpen(false);
+    }
+  });
+
+  document.addEventListener('astro:page-load', () => {
+    syncUI();
+    setOpen(false);
+  });
+
+  syncUI();
+</script>

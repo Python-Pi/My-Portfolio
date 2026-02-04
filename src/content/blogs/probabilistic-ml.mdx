@@ -6,7 +6,7 @@ tags:
   - "Probabilistic Machine Learning"
   - "Machine Learning"
 draft: false
-status: "ongoing"
+status: "published"
 ---
 import ExpandableBlock from "../../mdx-components/ExpandableBlock.astro";
 
@@ -138,7 +138,7 @@ P(D_*|D) = \int P(D_*|\theta) \cdot P(\theta|D) d\theta
 ```math
 P(D_*|D)  = \frac{P(D_*, D)}{P(D)} 
 ```
-This is equiavalent of ratio of Joint likelihood and marginal likelihood of training data.
+This is equivalent to the ratio of Joint likelihood and marginal likelihood of training data.
 
 - Using ensemble of estimates ($\theta^{(m)}$) from the posterior distribution.
 
@@ -206,12 +206,6 @@ Therefore, the posterior predictive distribution is a Bernoulli distribution giv
 ```math
 P(y_*|\alpha, \beta, y) = \text{Bernoulli}\left(y_* \mid \frac{\alpha + N_1}{\alpha + \beta + N}\right)
 ```
-
-
-
-## Multinoulli Observation Model
-
-Used for discrete valued observations with more than two categories.
 
 ## Gaussian Observation Model
 Gaussian distribution is given by:

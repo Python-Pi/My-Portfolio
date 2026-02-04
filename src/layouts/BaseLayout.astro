@@ -10,7 +10,7 @@ import "katex/dist/katex.min.css";
 ---
 
 <!doctype html>
-<html lang={siteConfig.language} data-theme="dark">
+<html lang={siteConfig.language} data-theme="dark" data-accent="blue">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -39,6 +39,10 @@ import "katex/dist/katex.min.css";
             ? "light"
             : "dark");
         document.documentElement.setAttribute("data-theme", theme);
+
+        const storedAccent = localStorage.getItem("accent");
+        const accent = storedAccent || "blue";
+        document.documentElement.setAttribute("data-accent", accent);
       })();
     </script>
 
@@ -47,6 +51,8 @@ import "katex/dist/katex.min.css";
       document.addEventListener("astro:before-swap", (e) => {
         const theme = document.documentElement.getAttribute("data-theme");
         e.newDocument.documentElement.setAttribute("data-theme", theme);
+        const accent = document.documentElement.getAttribute("data-accent");
+        e.newDocument.documentElement.setAttribute("data-accent", accent);
       });
     </script>
 

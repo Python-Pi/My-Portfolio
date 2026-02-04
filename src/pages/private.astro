@@ -72,6 +72,18 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       statusEl.textContent = message;
     };
 
+    const ensureCryptoReady = () => {
+      if (!window.isSecureContext) {
+        setStatus("Decryption requires a secure context (HTTPS or localhost).", "error");
+        return false;
+      }
+      if (!crypto?.subtle) {
+        setStatus("WebCrypto is not available in this browser.", "error");
+        return false;
+      }
+      return true;
+    };
+
     const b64ToArrayBuffer = (b64) => {
       const bin = atob(b64);
       const len = bin.length;
@@ -106,6 +118,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     };
 
     const decryptNotes = async (password) => {
+      if (!ensureCryptoReady()) return;
       setStatus("Fetching encrypted notes...", "info");
       let meta;
       try {
@@ -113,7 +126,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         meta = await res.json();
       } catch (e) {
-        setStatus("No encrypted notes found. Generate them first.", "warning");
+        setStatus("Unable to load encrypted notes. Make sure public/private-notes.json exists.", "warning");
         return;
       }
 
@@ -168,6 +181,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       e.preventDefault();
       notesEl.hidden = true;
       notesEl.innerHTML = "";
+      setStatus("");
       const password = document.getElementById("password").value;
       if (!password) {
         setStatus("Please enter a password.", "warning");

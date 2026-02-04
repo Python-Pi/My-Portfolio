@@ -49,7 +49,7 @@ x_n
 \end{bmatrix}
 ``` 
 
-We sometimes furthur simplify this notation by incorporating the bias term into the weight and feature vectors:
+We sometimes further simplify this notation by incorporating the bias term into the weight and feature vectors:
 
 ```math 
 \mathbf{w} = \begin{bmatrix}
@@ -112,7 +112,7 @@ where noise $\epsilon$ is normally distributed with mean $0$ and variance $\sigm
 
 ### Modeling 
 
-To learn more about the probalisitc approach, check out my blog on [Basics of Probabilistic Machine Learning](/blogs/probabilistic-ml)
+To learn more about the probabilistic approach, check out my blog on [Basics of Probabilistic Machine Learning](/blogs/probabilistic-ml)
 
 Simply put, 
 
@@ -174,7 +174,7 @@ This extra term penalizes large weights, encouraging the model to find a balance
 
 ### Maximum Likelihood Estimation (MLE)
 
-We estimate MLE by maximing the log-likelihood of the data (or minimizing the negative log-likelihood):
+We estimate MLE by maximizing the log-likelihood of the data (or minimizing the negative log-likelihood):
 
 ```math
 \mathbf{w}_{MLE} = (\mathbf{X}^T \mathbf{X})^{-1} \mathbf{X}^T \mathbf{y}
@@ -190,7 +190,7 @@ The log-likelihood for all data points is:
 ```math
 p(y | \mathbf{X}, \mathbf{w}, \beta) = \prod_{n=1}^{N} \mathcal{N}(y_n | \mathbf{w}^T x_n, \beta^{-1})
 ```
-For simplification, we take the log (I'm also ignoring the hyperparameters and constants ):
+For simplification, we take the log (I'm also ignoring the hyper parameters and constants):
 ```math
 \log p(y) = \sum_{n=1}^{N} \log \mathcal{N}(y_n)
 ```
@@ -218,7 +218,7 @@ the posterior directly, instead we maximize the log-posterior (or minimize the n
 ```math 
 \mathbf{w}_{MAP} = (\mathbf{X}^T \mathbf{X} + \delta I_D)^{-1} \mathbf{X}^T \mathbf{y}
 ```
-where $\delta$ is the regularization paramater 
+where $\delta$ is the regularization parameter 
 ```math
 \delta = \frac{\lambda}{\beta}
 ```
@@ -263,7 +263,7 @@ The MAP objective is to maximize the log-posterior:
 ```math
 = \arg\min_{\mathbf{w}} \left( \sum_{n=1}^{N} (y_n - \mathbf{w}^T x_n)^2 + \delta \mathbf{w}^T \mathbf{w} \right)
 ```
-where $\delta$ is the regularization paramater 
+where $\delta$ is the regularization parameter 
 ```math
 \delta = \frac{\lambda}{\beta}
 ```
@@ -279,7 +279,7 @@ This is equivalent to minimizing the regularized loss function (MSE + L2 regular
 
 ### Posterior Distribution
 
-Guassian Likelihood + Guassian Prior = Guassian Posterior. So, the posterior distribution of the weights is also Gaussian:
+Gaussian Likelihood + Gaussian Prior = Gaussian Posterior. So, the posterior distribution of the weights is also Gaussian:
 
 ```math
 p(\mathbf{w} | \mathbf{X}, \mathbf{y}, \beta, \lambda) = \mathcal{N}(\mathbf{w} | \mu_N, \Sigma_N)

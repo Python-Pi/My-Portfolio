@@ -20,6 +20,7 @@
 import { Icon } from 'astro-icon/components';
 import { siteConfig } from '../config';
 import ThemeToggle from './ThemeToggle.astro';
+import ThemeColorSelect from './ThemeColorSelect.astro';
 
 const currentPath = Astro.url.pathname;
 
@@ -92,6 +93,7 @@ const isActive = (href: string) => {
       <Icon name="mdi:magnify" aria-hidden="true" class="nav-search__icon" />
       <span class="sr-only">Search</span>
     </a>
+    <ThemeColorSelect />
     <ThemeToggle />
   </div>
 </nav>
@@ -120,8 +122,19 @@ const isActive = (href: string) => {
     });
   }
 
+  function enableNavTransitions() {
+    document.documentElement.classList.add('nav-ready');
+  }
+
+  function prepareNavTransitions() {
+    document.documentElement.classList.remove('nav-ready');
+    updateActiveNav();
+    requestAnimationFrame(() => requestAnimationFrame(enableNavTransitions));
+  }
+
   // Run on initial load and after each navigation
-  document.addEventListener('astro:page-load', updateActiveNav);
+  document.addEventListener('astro:page-load', prepareNavTransitions);
+  prepareNavTransitions();
 </script>
 
 <style>
@@ -195,6 +208,7 @@ const isActive = (href: string) => {
   }
 
   .nav-link {
+    position: relative;
     color: var(--color-text-secondary);
     font-size: 0.8125rem;
     font-weight: 500;
@@ -205,12 +219,37 @@ const isActive = (href: string) => {
     white-space: nowrap;
   }
 
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -6px;
+    height: 2px;
+    background: var(--color-accent);
+    border-radius: 999px;
+    transform: scaleX(0);
+    transform-origin: center;
+  }
+
+  :global(.nav-ready) .nav-link::after {
+    transition: transform 0.2s ease;
+  }
+
   .nav-link:hover {
     color: var(--color-text);
   }
 
+  .nav-link:hover::after {
+    transform: scaleX(1);
+  }
+
   .nav-link--active {
     color: var(--color-text);
+  }
+
+  .nav-link--active::after {
+    transform: scaleX(1);
   }
 
   .nav-end {
