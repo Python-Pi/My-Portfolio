@@ -171,10 +171,10 @@ const isActive = (href: string) => {
     });
   }
 
-  const menuButton = document.querySelector('.nav-menu');
-  const menuPanel = document.querySelector('#mobile-nav-menu');
+  const menuButton = document.querySelector('.nav-menu') as HTMLButtonElement | null;
+  const menuPanel = document.querySelector('#mobile-nav-menu') as HTMLElement | null;
 
-  function setMenuOpen(isOpen) {
+  function setMenuOpen(isOpen: boolean) {
     if (!menuButton || !menuPanel) return;
     menuPanel.hidden = !isOpen;
     menuButton.setAttribute('aria-expanded', String(isOpen));
