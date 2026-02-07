@@ -4,7 +4,9 @@
 
 :root {
   /* Color System - Dark Mode Default */
-  --color-bg-base: #0f1115;
+  --color-bg-base-dark: #0f1115;
+  --color-bg-base-light: #f8f6f1;
+  --color-bg-base: var(--color-bg-base-dark);
   --color-bg: var(--color-bg-base);
   --color-bg-secondary: #15171c;
   --color-bg-elevated: #1c2028;
@@ -73,6 +75,57 @@
   --transition-fast: 150ms ease;
   --transition-base: 200ms ease;
   --transition-slow: 300ms ease;
+
+  /* Theme reveal animation defaults */
+  --theme-reveal-x: 50vw;
+  --theme-reveal-y: 0px;
+  --theme-reveal-size: 0px;
+  --theme-mask-color: transparent;
+  --theme-reveal-radius: 0px;
+}
+
+@property --theme-reveal-radius {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :root.theme-reveal::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: var(--theme-mask-color);
+    -webkit-mask-image: radial-gradient(
+      circle at var(--theme-reveal-x) var(--theme-reveal-y),
+      transparent 0,
+      transparent var(--theme-reveal-radius),
+      #000 calc(var(--theme-reveal-radius) + 1px)
+    );
+    mask-image: radial-gradient(
+      circle at var(--theme-reveal-x) var(--theme-reveal-y),
+      transparent 0,
+      transparent var(--theme-reveal-radius),
+      #000 calc(var(--theme-reveal-radius) + 1px)
+    );
+    transition: --theme-reveal-radius 450ms ease;
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  :root.theme-reveal {
+    --theme-reveal-radius: 0px;
+  }
+
+  :root.theme-reveal.theme-reveal--active::before {
+    --theme-reveal-radius: var(--theme-reveal-size);
+  }
+}
+
+@media (max-width: 768px) {
+  :root.theme-reveal::before {
+    content: none;
+  }
 }
 
 /* Accent palettes (dark mode) */
@@ -128,7 +181,7 @@
 
 /* Light Mode Colors */
 [data-theme="light"] {
-  --color-bg-base: #f8f6f1;
+  --color-bg-base: var(--color-bg-base-light);
   --color-bg: var(--color-bg-base);
   --color-bg-secondary: #f1efe9;
   --color-bg-elevated: #fbfaf6;

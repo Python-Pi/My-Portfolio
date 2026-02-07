@@ -102,10 +102,51 @@
     localStorage.setItem('theme', theme);
   };
 
+  const getRevealOrigin = (element: Element | null) => {
+    if (!element) {
+      return { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+    }
+    const rect = element.getBoundingClientRect();
+    return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+  };
+
+  const runThemeReveal = (originElement: Element | null, nextTheme: 'light' | 'dark') => {
+    const root = document.documentElement;
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const isMobile = window.matchMedia('(max-width: 768px)').matches;
+
+    if (prefersReduced || isMobile) {
+      setTheme(nextTheme);
+      return;
+    }
+
+    const { x, y } = getRevealOrigin(originElement);
+    const maxX = Math.max(x, window.innerWidth - x);
+    const maxY = Math.max(y, window.innerHeight - y);
+    const radius = Math.hypot(maxX, maxY);
+    const oldBg = getComputedStyle(root).getPropertyValue('--color-bg-base').trim();
+
+    root.style.setProperty('--theme-reveal-x', `${x}px`);
+    root.style.setProperty('--theme-reveal-y', `${y}px`);
+    root.style.setProperty('--theme-reveal-size', `${radius}px`);
+    root.style.setProperty('--theme-mask-color', oldBg || getComputedStyle(document.body).backgroundColor);
+
+    root.classList.add('theme-reveal');
+    setTheme(nextTheme);
+    requestAnimationFrame(() => {
+      root.classList.add('theme-reveal--active');
+    });
+
+    window.setTimeout(() => {
+      root.classList.remove('theme-reveal', 'theme-reveal--active');
+    }, 500);
+  };
+
   // Toggle theme
-  const toggleTheme = () => {
+  const toggleTheme = (originElement: Element | null) => {
     const current = document.documentElement.getAttribute('data-theme');
-    setTheme(current === 'dark' ? 'light' : 'dark');
+    const nextTheme = current === 'dark' ? 'light' : 'dark';
+    runThemeReveal(originElement, nextTheme);
   };
 
   // Use event delegation on document to handle clicks
@@ -113,7 +154,7 @@
   document.addEventListener('click', (e) => {
     const toggle = (e.target as Element).closest('.theme-toggle');
     if (toggle) {
-      toggleTheme();
+      toggleTheme(toggle);
     }
   });
 
