@@ -76,7 +76,7 @@ const isActive = (href: string) => {
   <div class="nav-scroll">
     <ul class="nav-list">
       {navItems.map((item) => (
-        <li class="nav-item">
+        <li class:list={['nav-item', { 'nav-item--active': isActive(item.href) }]}>
           <a 
             href={item.href} 
             class:list={['nav-link', { 'nav-link--active': isActive(item.href) }]}
@@ -99,6 +99,31 @@ const isActive = (href: string) => {
     </a>
     <ThemeColorSelect />
     <ThemeToggle />
+    <button
+      type="button"
+      class="nav-icon-button nav-menu"
+      aria-label="Open navigation menu"
+      aria-expanded="false"
+      aria-controls="mobile-nav-menu"
+    >
+      <Icon name="mdi:menu" aria-hidden="true" class="nav-search__icon" />
+      <span class="sr-only">Menu</span>
+    </button>
+  </div>
+  <div class="nav-menu-panel" id="mobile-nav-menu" hidden>
+    <ul class="nav-menu-list">
+      {navItems.map((item) => (
+        <li class="nav-menu-item">
+          <a
+            href={item.href}
+            class:list={['nav-menu-link', { 'nav-menu-link--active': isActive(item.href) }]}
+            aria-current={isActive(item.href) ? 'page' : undefined}
+          >
+            {item.label}
+          </a>
+        </li>
+      ))}
+    </ul>
   </div>
 </nav>
 
@@ -106,6 +131,7 @@ const isActive = (href: string) => {
   function updateActiveNav() {
     const currentPath = window.location.pathname;
     const navLinks = document.querySelectorAll('.nav-link');
+    const menuLinks = document.querySelectorAll('.nav-menu-link');
     
     navLinks.forEach((link) => {
       const href = link.getAttribute('href');
@@ -118,6 +144,25 @@ const isActive = (href: string) => {
       }
       
       link.classList.toggle('nav-link--active', isActive);
+      link.closest('.nav-item')?.classList.toggle('nav-item--active', isActive);
+      if (isActive) {
+        link.setAttribute('aria-current', 'page');
+      } else {
+        link.removeAttribute('aria-current');
+      }
+    });
+
+    menuLinks.forEach((link) => {
+      const href = link.getAttribute('href');
+      let isActive = false;
+
+      if (href === '/') {
+        isActive = currentPath === '/';
+      } else if (href) {
+        isActive = currentPath.startsWith(href);
+      }
+
+      link.classList.toggle('nav-menu-link--active', isActive);
       if (isActive) {
         link.setAttribute('aria-current', 'page');
       } else {
@@ -126,6 +171,40 @@ const isActive = (href: string) => {
     });
   }
 
+  const menuButton = document.querySelector('.nav-menu');
+  const menuPanel = document.querySelector('#mobile-nav-menu');
+
+  function setMenuOpen(isOpen) {
+    if (!menuButton || !menuPanel) return;
+    menuPanel.hidden = !isOpen;
+    menuButton.setAttribute('aria-expanded', String(isOpen));
+  }
+
+  function toggleMenu() {
+    if (!menuPanel) return;
+    setMenuOpen(menuPanel.hidden);
+  }
+
+  menuButton?.addEventListener('click', (event) => {
+    event.stopPropagation();
+    toggleMenu();
+  });
+
+  menuPanel?.addEventListener('click', (event) => {
+    const target = event.target as HTMLElement | null;
+    if (target?.closest('a')) {
+      setMenuOpen(false);
+    }
+  });
+
+  document.addEventListener('click', (event) => {
+    if (!menuPanel || menuPanel.hidden) return;
+    const target = event.target as HTMLElement | null;
+    if (!target?.closest('.nav-menu')) {
+      setMenuOpen(false);
+    }
+  });
+
   function enableNavTransitions() {
     document.documentElement.classList.add('nav-ready');
   }
@@ -133,6 +212,7 @@ const isActive = (href: string) => {
   function prepareNavTransitions() {
     document.documentElement.classList.remove('nav-ready');
     updateActiveNav();
+    setMenuOpen(false);
     requestAnimationFrame(() => requestAnimationFrame(enableNavTransitions));
   }
 
@@ -145,6 +225,7 @@ const isActive = (href: string) => {
   .site-nav {
     display: flex;
     align-items: center;
+    position: relative;
     border-bottom: 1px solid var(--color-border);
     background: var(--color-bg);
     padding: var(--space-md) 0;
@@ -294,6 +375,56 @@ const isActive = (href: string) => {
     transition: color var(--transition-fast), background var(--transition-fast), transform var(--transition-fast);
   }
 
+  .nav-menu {
+    display: none;
+    margin-left: 0.1rem;
+  }
+
+  .nav-menu-panel {
+    position: absolute;
+    right: 0.75rem;
+    top: calc(100% + 0.5rem);
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-md);
+    padding: 0.5rem;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+    z-index: 20;
+    min-width: 11rem;
+  }
+
+  .nav-menu-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .nav-menu-item {
+    margin: 0;
+  }
+
+  .nav-menu-link {
+    display: block;
+    padding: 0.5rem 0.75rem;
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-radius: var(--border-radius-sm);
+    transition: color var(--transition-fast), background var(--transition-fast);
+  }
+
+  .nav-menu-link:hover,
+  .nav-menu-link--active {
+    color: var(--color-text);
+    background: var(--color-bg-secondary);
+  }
+
   .nav-search:hover,
   .nav-icon-button:hover {
     color: var(--color-text);
@@ -328,6 +459,24 @@ const isActive = (href: string) => {
   }
 
   @media (max-width: 768px) {
+    .nav-menu {
+      display: inline-flex;
+    }
+
+    .nav-menu-panel {
+      right: 0.5rem;
+      left: 0.5rem;
+      min-width: auto;
+    }
+
+    .nav-item {
+      display: none;
+    }
+
+    .nav-item--active {
+      display: block;
+    }
+
     .nav-list {
       justify-content: flex-start;
       gap: 1.5rem;
