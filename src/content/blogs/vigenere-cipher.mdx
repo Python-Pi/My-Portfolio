@@ -5,7 +5,7 @@ publishDate: 2026-01-31
 tags:
   - "Cryptography"
   - "Vigenere Cipher"
-draft: false
+status: "published"
 ---
 
 ## What is Vigenere Cipher?
@@ -23,7 +23,7 @@ Each letter in the key determines the shift for the corresponding letter in the 
 Consider the plaintext: "ATTACKATDAWN" and key: "LEMON", the encrypted ciphertext would be "LXFOPVEFRNHR".
 
 <img
-  src="/cryptography-mini-blogs/vigenere-cipher.drawio.svg"
+  src="/cryptography-blogs/vigenere-cipher.drawio.svg"
   alt="Prefix Sum"
   style={{ 
     margin: "0 auto", 
@@ -36,7 +36,7 @@ The image clearly shows how we encrypt using Vigenere Cipher.
 
 ## How to break Vigenere Cipher?
 
-Breaking Vigenere Cipher involves two cricual steps:
+Breaking Vigenere Cipher involves two crucial steps:
 - Finding the key length
 - Finding the key itself
 
@@ -80,7 +80,7 @@ To find the key length using IC:
 ### Finding the key
 
 Once we have the key length, we can find the key itself by treating each column as a separate Caesar cipher.
-- For each column, perform frequencry analysis to determine the letter frequencies, typically in English text 'E' is the most frequent letter.
+- For each column, perform frequency analysis to determine the letter frequencies, typically in English text 'E' is the most frequent letter.
 - Assume the most frequent letter in the column corresponds to 'E' in plaintext. (we can try other letters too)
 - Calculate the shift required to map the most frequent letter in the column to 'E'.
 - This shift gives us the corresponding letter in the key.
@@ -88,4 +88,4 @@ Once we have the key length, we can find the key itself by treating each column 
 
 Once we have the key, we can decrypt the ciphertext using the Vigenere decryption process.
 
-The implemention of the above can be found at [Github Repo](https://github.com/Python-Pi/Vigenere-cipher)
+The implementation of the above can be found at [Github Repo](https://github.com/Python-Pi/Vigenere-cipher)

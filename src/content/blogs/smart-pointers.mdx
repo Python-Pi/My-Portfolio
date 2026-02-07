@@ -5,7 +5,6 @@ publishDate: 2026-01-18
 tags:
   - "C++"
   - "Smart Pointers"
-draft: false
 status: "published"
 ---
 import ScrollLink from '../../components/ScrollLink.astro';
@@ -39,7 +38,7 @@ void* danglingPtr() {
 }
 ```
 
-3. **Double Deletions**: This occurs when the same memory is deleted more than once. This can lead to undefined behaviour in C++ or even crashes.
+3. **Double Deletions**: This occurs when the same memory is deleted more than once. This can lead to undefined behavior in C++ or even crashes.
 
 ```cpp
 void doubleDelete() {
@@ -203,7 +202,7 @@ Things I need to implement:
     - Move constructor
 - Destructor
 - Dereference operators * and ->
-- Assignment Opeators
+- Assignment Operators
     - Copy Assignment
     - Move Assignment 
 - Functions like get, use_count release, reset and swap

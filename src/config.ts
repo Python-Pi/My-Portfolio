@@ -69,7 +69,6 @@ export const siteConfig = {
   nav: [
     { label: 'Literature Review', href: '/literature-review' },
     { label: 'Blogs', href: '/blogs' },
-    { label: 'Mini Blogs', href: '/mini-blogs' },
     { label: 'Books', href: '/books' },
     { label: 'Notes', href: '/notes' },
     

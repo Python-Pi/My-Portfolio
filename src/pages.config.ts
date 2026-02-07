@@ -55,23 +55,13 @@ export const pagesConfig = {
   },
 
   /**
-   * Mini blogs listing page (/mini-blogs)
-   */
-  miniBlogs: {
-    title: 'Mini Blogs',
-    description: 'Bite-sized updates that don\'t need a full article',
-    heading: 'Mini Blogs',
-    intro: 'Bite-sized updates that don\'t need a full article.',
-  },
-
-  /**
    * Notes section page (/notes)
    */
   notes: {
     title: 'Notes',
-    description: 'Curated folders that group related blogs and mini blogs for quick reference.',
+    description: 'Curated folders that group related blogs for quick reference.',
     heading: 'Notes',
-    intro: 'Related blogs and mini blogs for quick reference.',
+    intro: 'Related blogs for quick reference.',
   },
 
   /** ===========================STILL IN DEVELOPMENT============================================= */

@@ -1,0 +1,112 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SEO from '../components/SEO.astro';
+import ArticleCard from '../components/ArticleCard.astro';
+import PageStats from '../components/PageStats.astro';
+import { getCollection } from 'astro:content';
+
+const archivedBlogs = (await getCollection('blogs', ({ data }) => data.status === 'archived'))
+  .sort((a, b) => b.data.publishDate.getTime() - a.data.publishDate.getTime());
+const archivedBooks = (await getCollection('books', ({ data }) => data.status === 'archived'))
+  .sort((a, b) => b.data.publishDate.getTime() - a.data.publishDate.getTime());
+const archivedReviews = (await getCollection('literature-review', ({ data }) => data.status === 'archived'))
+  .sort((a, b) => b.data.publishDate.getTime() - a.data.publishDate.getTime());
+
+const totalArchived = archivedBlogs.length + archivedBooks.length + archivedReviews.length;
+---
+
+<BaseLayout>
+  <SEO
+    slot="head"
+    title="Archive"
+    description="Archived posts, books, and literature reviews."
+    type="website"
+  />
+
+  <main class="page-container">
+    <header class="page-header">
+      <p class="page-label">Archive</p>
+      <h1 class="page-title">Archived Writing</h1>
+      <p class="page-intro">
+        Older pieces that are still worth keeping around.
+      </p>
+      <PageStats text={`${totalArchived} archived item${totalArchived === 1 ? '' : 's'}`} />
+    </header>
+
+    <section class="archive-section">
+      <h2 class="archive-title">Blogs</h2>
+      {archivedBlogs.length > 0 ? (
+        <div class="card-list">
+          {archivedBlogs.map((blog) => (
+            <ArticleCard
+              title={blog.data.title}
+              slug={blog.id}
+              description={blog.data.description}
+              publishDate={blog.data.publishDate}
+              tags={blog.data.tags}
+              basePath="/blogs"
+              featured={blog.data.featured}
+              status={blog.data.status}
+            />
+          ))}
+        </div>
+      ) : (
+        <p class="empty-state">No archived blogs yet.</p>
+      )}
+    </section>
+
+    {archivedBooks.length > 0 && (
+      <section class="archive-section">
+        <h2 class="archive-title">Books</h2>
+        <div class="card-list">
+          {archivedBooks.map((book) => (
+            <ArticleCard
+              title={book.data.title}
+              slug={book.id}
+              description={book.data.description}
+              publishDate={book.data.publishDate}
+              tags={book.data.tags}
+              basePath="/books"
+              featured={book.data.featured}
+              status={book.data.status}
+            />
+          ))}
+        </div>
+      </section>
+    )}
+
+    {archivedReviews.length > 0 && (
+      <section class="archive-section">
+        <h2 class="archive-title">Literature Reviews</h2>
+        <div class="card-list">
+          {archivedReviews.map((paper) => (
+            <ArticleCard
+              title={paper.data.title}
+              slug={paper.id}
+              description={paper.data.description}
+              publishDate={paper.data.publishDate}
+              tags={paper.data.tags}
+              basePath="/literature-review"
+              featured={paper.data.featured}
+              status={paper.data.status}
+            />
+          ))}
+        </div>
+      </section>
+    )}
+  </main>
+
+  <style>
+    .archive-section {
+      padding: 2rem 0 0;
+    }
+
+    .archive-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--color-text);
+      margin-bottom: 1.25rem;
+    }
+  </style>
+</BaseLayout>

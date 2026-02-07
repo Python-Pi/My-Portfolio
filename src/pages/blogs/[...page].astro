@@ -18,7 +18,7 @@ import type { GetStaticPaths } from 'astro';
 export const getStaticPaths: GetStaticPaths = async () => {
   const postsPerPage = 5;
 
-  const allArticles = await getCollection('blogs', ({ data }) => data.draft === false);
+  const allArticles = await getCollection('blogs', ({ data }) => data.status !== 'archived');
 
   const sortedArticles = allArticles.sort((a, b) => {
     return b.data.publishDate.getTime() - a.data.publishDate.getTime();

@@ -53,8 +53,8 @@ const rightColumnFolders = typedFolders.filter((_, i) => i % 2 === 1);
 
 const totalEntries = foldersWithDescriptions.reduce((count, folder) => count + folder.entries.length, 0);
 
-const collectionLabel = (collection: NotesEntryCollection) => (collection === 'blogs' ? 'Blog' : 'Mini Blog');
-const entryHref = (collection: NotesEntryCollection, slug: string) => `${collection === 'blogs' ? '/blogs' : '/mini-blogs'}/${slug}`;
+const collectionLabel = (_collection: NotesEntryCollection) => 'Blog';
+const entryHref = (_collection: NotesEntryCollection, slug: string) => `/blogs/${slug}`;
 ---
 
 <BaseLayout>

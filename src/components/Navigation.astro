@@ -93,6 +93,10 @@ const isActive = (href: string) => {
       <Icon name="mdi:magnify" aria-hidden="true" class="nav-search__icon" />
       <span class="sr-only">Search</span>
     </a>
+    <a href="/archive" class="nav-icon-button" aria-label="Archive">
+      <Icon name="mdi:archive" aria-hidden="true" class="nav-search__icon" />
+      <span class="sr-only">Archive</span>
+    </a>
     <ThemeColorSelect />
     <ThemeToggle />
   </div>
@@ -274,7 +278,8 @@ const isActive = (href: string) => {
     pointer-events: none;
   }
 
-  .nav-search {
+  .nav-search,
+  .nav-icon-button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -289,13 +294,15 @@ const isActive = (href: string) => {
     transition: color var(--transition-fast), background var(--transition-fast), transform var(--transition-fast);
   }
 
-  .nav-search:hover {
+  .nav-search:hover,
+  .nav-icon-button:hover {
     color: var(--color-text);
     background: var(--color-bg-secondary);
     transform: translateY(-1px);
   }
 
-  .nav-search:focus-visible {
+  .nav-search:focus-visible,
+  .nav-icon-button:focus-visible {
     color: var(--color-text);
     background: var(--color-bg-secondary);
     transform: translateY(-1px);
@@ -345,7 +352,8 @@ const isActive = (href: string) => {
       width: 16px;
     }
 
-    .nav-search {
+    .nav-search,
+    .nav-icon-button {
       width: 32px;
       height: 32px;
     }

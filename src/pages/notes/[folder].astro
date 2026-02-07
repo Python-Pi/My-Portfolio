@@ -89,7 +89,7 @@ const pageDescription = folder.description ?? `All saved entries for ${folder.ti
       <div class="card-list card-list--compact">
         {folder.entries.map((entry) => {
           const enrichedEntry = entry as NotesEntryWithContent;
-          const basePath = enrichedEntry.collection === 'blogs' ? '/blogs' : '/mini-blogs';
+          const basePath = '/blogs';
           return (
             <ArticleCard
               title={enrichedEntry.resolvedTitle}

@@ -10,10 +10,7 @@ import { getCollection, getEntry, render } from "astro:content";
 import { getReadingTime } from "../../utils/readingTime";
 
 export async function getStaticPaths() {
-  const books = await getCollection(
-    "books",
-    ({ data }) => data.draft === false,
-  );
+  const books = await getCollection("books");
   return books.map((book) => ({
     params: { slug: book.id },
   }));

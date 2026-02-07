@@ -11,7 +11,7 @@ import type { GetStaticPaths } from 'astro';
 export const getStaticPaths: GetStaticPaths = async () => {
   const booksPerPage = 5;
 
-  const allBooks = await getCollection('books', ({ data }) => data.draft === false);
+  const allBooks = await getCollection('books', ({ data }) => data.status !== 'archived');
 
   const sortedBooks = allBooks.sort((a, b) => {
     return b.data.publishDate.getTime() - a.data.publishDate.getTime();

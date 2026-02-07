@@ -13,7 +13,6 @@ tags:
   - "self-supervised-learning"
   - "vision-transformers"
 link: "https://openaccess.thecvf.com/content/ICCV2021/papers/Caron_Emerging_Properties_in_Self-Supervised_Vision_Transformers_ICCV_2021_paper.pdf"
-draft: false
 status: "published"
 ---
 
@@ -27,10 +26,10 @@ The key findings of the paper include:
 
 ## Introduction 
 
-$$\qquad$$ Tranformers have emerged as a powerful architecture in computer vision but in the early days of it's adoption mostly with supervised learning,
+$$\qquad$$ Transformers have emerged as a powerful architecture in computer vision but in the early days of its adoption mostly with supervised learning,
 the improvements offered by transformers over convolutional neural networks (CNNs) were modest at best even though they need significantly more resources to train.
 
-One of the main reason transformers dominated the Natural Language Processing (NLP) field was due to the use of self-supervised methods,
+One of the main reasons transformers dominated the Natural Language Processing (NLP) field was due to the use of self-supervised methods,
 in the form of close procedure in BERT or language modeling in GPT. These self-supervised pretraining objectives use the words
 in a sentence to create pretext tasks that provide a richer learning signal than the supervised objective of predicting a single label per sentence.
 
@@ -39,11 +38,11 @@ That's why self supervised learning with convnets was tried before which is the 
 
 ## Related Work
 
-$$\qquad$$ A large amount of work on self-supervised learning focusess on **discriminative approaches** that learn representations by comparing different views of the same image.
+$$\qquad$$ A large amount of work on self-supervised learning focuses on **discriminative approaches** that learn representations by comparing different views of the same image.
 These are coined as **instance classification** methods where each image is treated as its own class and the model learns to discriminate between different images.
 During training, the model is asked to distinguish one image from all others, not by memorizing pixel values, but by learning representations that remain consistent under
 various data augmentations such as cropping, color jittering, or blurring. Two augmented views of the same image are considered positives, while views from different images 
-are treated as negatives. The use of strong augmentations is crucial here, as it defines the invariances the model should learn and prevents trivial solutions.
+are treated as negatives. The use of strong augmentations is crucial here, as it defines the invariance the model should learn and prevents trivial solutions.
 
 This forces the model to learn meaningful features that capture the essence of the images rather than just memorizing them.
 Although instance classification has proven effective at learning rich visual features, it comes with important limitations. 
@@ -55,9 +54,9 @@ Additionally, this approach poses scalability and efficiency challenges.
 
 ### Self Learning 
 
-$$\qquad$$ Self learning is a strategy where the model tries the propogate information from a set of labelled data
+$$\qquad$$ Self learning is a strategy where the model tries the propagate information from a set of labelled data
 to a larger set of unlabelled data. The model is first trained on the labelled data and then used
-to predict the labels for the unlabelled data (also called psuedo-labelling). The model is then retrained on the combined dataset of labelled and pseudo-labelled data.
+to predict the labels for the unlabelled data (also called pseudo-labelling). The model is then retrained on the combined dataset of labelled and pseudo-labelled data.
 Doing this iteratively over time helps propagate the label information from the labeled subset to the unlabeled majority, improving the quality of learned features.
 
 The propagation can be done in two ways:
@@ -73,7 +72,7 @@ Both of the above mechanisms are a way to transfer information from a stronger s
 
 ### Knowledge Distillation with no labels 
 
-$$\qquad$$ The idea of knowledge distallation can be pushed even further by removing the need for any labels at all. In this case, 
+$$\qquad$$ The idea of knowledge distillation can be pushed even further by removing the need for any labels at all. In this case, 
 the teacher model itself emerges during training. The teacher model is slowly updated as an exponential moving average of the student model.
 
 The model learns by making different views (augmentations) of the input, the teacher's predictions are used as soft labels for the student, 
@@ -155,7 +154,7 @@ when applying DINO to ViT we do not use any BN also in the projection heads, mak
 
 ### Avoiding Collapse
 
-[See Mini Blog: What is Collapse in Self-Supervised Learning?](/mini-blogs/what-is-collapse-in-self-supervised-learning)
+[See Blog: What is Collapse in Self-Supervised Learning?](/blogs/what-is-collapse-in-self-supervised-learning)
 
 Teacher model produces logits over a set of dimensions. Collapse in this context can happen in two main ways:
 - A single dimension dominating the output, leading the student model to always predict that dimension.
@@ -193,7 +192,7 @@ while sharpening is like enhancing contrast to ensure details stand out.*
 
 ## Results
 
-Here are some of the impressive results achieved by DINO with ViTs on various datasets without any finetuning:
+Here are some of the impressive results achieved by DINO with ViTs on various datasets without any fine tuning:
 <img
   src="/emerging-properties-of-self-supervised-vits/img2.PNG"
   alt="Image Retrieval"
@@ -270,7 +269,7 @@ comparable with the best convnets specifically designed for this setting.
 The paper has identified several interesting properties of self-supervised ViTs that do not emerge from supervised ViTs or convnets:
 - Self-supervised ViT features explicitly contain the scene layout and, in particular, object boundaries. This information is directly accessible in the self-attention modules of the last block.
 ![Object boundaries](/emerging-properties-of-self-supervised-vits/img1.PNG)
-- Self-supervised ViT features perform particularly well with a basic nearest neighbors classifier (k-NN) without any finetuning, 
+- Self-supervised ViT features perform particularly well with a basic nearest neighbors classifier (k-NN) without any fine tuning, 
 linear classifier nor data augmentation, achieving 78.3% top-1 accuracy on ImageNet.
 
 *Note: Top-1 accuracy measures how often a model’s single most confident prediction is correct*
@@ -291,7 +290,7 @@ Instead of training only one neural network, we use two versions of the same mod
   Learns quickly and is updated normally using backpropagation.
 - **Teacher (momentum encoder)**:
   Learns slowly and is not trained directly.
-  Instead, it is updated by taking a slow moving average of the student’s weights.
+  Instead, it is updated by taking a slow moving average of the student's weights.
 
 In simple terms: The student learns fast, and the teacher slowly follows the student.
 
@@ -299,7 +298,7 @@ In simple terms: The student learns fast, and the teacher slowly follows the stu
 
 **[CLS] token**: In transformer models, The [CLS] token acts like a summary node that gathers information from all other tokens through self-attention.
 
-**Softmax Function**: A mathematical function that converts a vectors of numners into probabilities that sum to 1.
+**Softmax Function**: A mathematical function that converts a vectors of numbers into probabilities that sum to 1.
 
 ```math
 \text{Softmax}(z_i) = \frac{e^{z_i}}{\sum_{j} e^{z_j}}
@@ -317,7 +316,7 @@ A lower cross-entropy loss indicates that both the distributions are similar. Al
 
 **Local Crop**: A smaller crop of the image that focuses on specific details(5%-50%), used to encourage the model to learn fine-grained features.
 
-$$\rightarrow$$ [Why Transformers Don't Use Batch Normalization](/mini-blogs/why-transformers-dont-use-batch-normalization)
+$$\rightarrow$$ [Why Transformers Don't Use Batch Normalization](/blogs/why-transformers-dont-use-batch-normalization)
 
 **Predicator**: In context of self-distillation, a predicator is often a small MLP placed after the projection head of the student network. 
 Predictors were introduced to prevent representation collapse (everything mapping to the same vector) without using negative samples. 

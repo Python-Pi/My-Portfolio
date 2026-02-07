@@ -17,7 +17,6 @@ const blogCollection = defineCollection({
     publishDate: z.coerce.date(),
     updatedDate: z.coerce.date().optional(),
     tags: z.array(z.string()).optional(),
-    draft: z.boolean().default(false),
     featured: z.boolean().default(false),
     status: z.enum(['published', 'ongoing', 'archived']).default('ongoing'),
   }),
@@ -34,7 +33,6 @@ const literatureReviewCollection = defineCollection({
     venue: z.string().optional(),
     tags: z.array(z.string()).optional(),
     link: z.string().url().optional(),
-    draft: z.boolean().default(false),
     featured: z.boolean().default(false),
     status: z.enum(['published', 'ongoing', 'archived']).default('ongoing'),
   }),
@@ -51,25 +49,10 @@ const booksCollection = defineCollection({
     publisher: z.string().optional(),
     link: z.string().url().optional(),
     tags: z.array(z.string()).optional(),
-    draft: z.boolean().default(false),
     featured: z.boolean().default(false),
     status: z.enum(['published', 'ongoing', 'archived']).default('ongoing'),
   }),
 });
-
-const miniBlogCollection = defineCollection({
-  loader: glob({ pattern: '**/*.mdx', base: './src/content/mini-blogs' }),
-  schema: z.object({
-    title: z.string(),
-    description: z.string(),
-    publishDate: z.coerce.date(),
-    updatedDate: z.coerce.date().optional(),
-    tags: z.array(z.string()).optional(),
-    draft: z.boolean().default(false),
-  }),
-});
-
-
 
 /** ==================================STILL IN DEVELOPMENT==================================================== */
 
@@ -145,7 +128,6 @@ export const collections = {
   blogs: blogCollection,
   'literature-review': literatureReviewCollection,
   books: booksCollection,
-  'mini-blogs': miniBlogCollection,
   journey: journeyCollection,
   speaking: speakingCollection,
 };

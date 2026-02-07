@@ -2,11 +2,11 @@
  * Notes index data
  *
  * JSON-style structure describing folders of saved references
- * to existing blog and mini-blog entries. Add new folders or entries
+ * to existing blog entries. Add new folders or entries
  * by editing this file only.
  */
 
-export type NotesEntryCollection = 'blogs' | 'mini-blogs';
+export type NotesEntryCollection = 'blogs';
 
 export interface NotesEntry {
   slug: string;
@@ -51,15 +51,15 @@ export const notesIndex: NotesFolder[] = [
     entries: [
       {
         slug: 'why-transformers-dont-use-batch-normalization',
-        collection: 'mini-blogs',
+        collection: 'blogs',
       },
       {
         slug: 'what-is-collapse-in-self-supervised-learning',
-        collection: 'mini-blogs',
+        collection: 'blogs',
       },
       {
         slug: 'discriminative-generative-models',
-        collection: 'mini-blogs',
+        collection: 'blogs',
       },
       {
         slug: 'probabilistic-linear-regression',
@@ -67,6 +67,10 @@ export const notesIndex: NotesFolder[] = [
       },
       {
         slug: 'probabilistic-ml',
+        collection: 'blogs',
+      },
+      {
+        slug: 'ml-metrics',
         collection: 'blogs',
       }
     ],
